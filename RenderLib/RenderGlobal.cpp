@@ -4,6 +4,7 @@
 #include "RenderDevice.h"
 #include "Renderer.h"
 #include "RenderResourceManager.h"
+#include "RenderPipeline.h"
 
 namespace Render
 {
@@ -16,6 +17,9 @@ namespace Render
 			return false;
 
 		if (false == RenderResourceManager::GetInstance().Initialize())
+			return false;
+
+		if (false == RenderPipeline::GetInstance().Initialize())
 			return false;
 
 		return true;

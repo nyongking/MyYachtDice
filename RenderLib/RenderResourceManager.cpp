@@ -1,5 +1,6 @@
 #include "RenderPch.h"
 #include "RenderResourceManager.h"
+#include "RenderDefaultRegistry.h"
 
 #include "RenderDevice.h"
 
@@ -23,12 +24,7 @@ namespace Render
 		m_pDevice = RenderDevice::GetInstance().m_device.Get();
 		m_pContext = RenderDevice::GetInstance().m_context.Get();
 
-		// Load/Create Default Resources		
-		if (!LoadVertexShaderBlobFromFile(L"./Bin/Default/Shader/VSPOSTEX.hlsl")) return false;
-		if (!CompleteVertexShader(L"./Bin/Default/Shader/VSPOSTEX.hlsl")) return false;
-
-		if (!LoadPixelShaderBlobFromFile(L"./Bin/Default/Shader/PSPOSTEX.hlsl")) return false;
-		if (!CompletePixelShader(L"./Bin/Default/Shader/PSPOSTEX.hlsl")) return false;
+		RenderDefaultRegistry::GetInstance().RegisterDefaultRenderItems(m_pDevice);
 
 		return true;
 	}

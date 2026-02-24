@@ -9,8 +9,8 @@ namespace Render
 		virtual ~Geometry() = default;
 
 	public:
-		virtual bool	DefaultCreateBuffers(ID3D11Device* pDevice) {}
-		void			BindAndDraw(ID3D11DeviceContext* pContext);
+		virtual bool	DefaultCreateBuffers(ID3D11Device* pDevice) { return true; }
+		bool			BindAndDraw(ID3D11DeviceContext* pContext);
 
 
 	protected:

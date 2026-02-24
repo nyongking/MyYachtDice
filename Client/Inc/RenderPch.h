@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <list>
 #include <string>
+#include <memory>
 
 // dx11
 #pragma comment (lib, "d3d11.lib")

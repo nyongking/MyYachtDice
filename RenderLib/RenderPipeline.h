@@ -11,21 +11,36 @@
 
 namespace Render
 {
-	enum RenderOrderRegistered // RenderGroup Default
+	enum RenderOrder // RenderGroup Default
 	{
-		PRIORITY = 0,
+		PRIORITY = 1,
+		NEXT_PRIORITY = 2,
 		DEFAULT = 4,
+		NEXT_DEFAULT = 5,
+
 		// TODO: 기본 추가 예정.
 	};
 
 	class RenderPipeline
 	{
+#pragma region Singleton
+	public:
+		static RenderPipeline& GetInstance()
+		{
+			static RenderPipeline instance;
+
+			return instance;
+		}
+#pragma endregion Singleton
+
 	public:
 		RenderPipeline() = default;
 		~RenderPipeline() = default;
 	
 	public:
 		bool Initialize();
+		bool RegisterRenderGroup(RenderOrder order, uint32_t argument);
+		bool AddShaderGroup(RenderOrder order, uint32_t argument, std::shared_ptr<class ShaderGroup> shaderGroup);
 
 	private:
 		std::map<uint32_t, std::unique_ptr<class RenderGroup>> m_renderGroups;

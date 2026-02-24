@@ -43,7 +43,7 @@
     <ClInclude Include="RenderResourceManager.h">
       <Filter>04.RenderResource\00.Manager</Filter>
     </ClInclude>
-    <ClInclude Include="RenderItemContainer.h">
+    <ClInclude Include="RenderDefaultRegistry.h">
       <Filter>03.RenderItem\00.Container</Filter>
     </ClInclude>
     <ClInclude Include="PixelShader.h">
@@ -53,6 +53,9 @@
       <Filter>02.RenderPipeline</Filter>
     </ClInclude>
     <ClInclude Include="RenderGroup.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewProjBuffer.h">
       <Filter>02.RenderPipeline</Filter>
     </ClInclude>
   </ItemGroup>
@@ -96,7 +99,7 @@
     <ClCompile Include="RenderResourceManager.cpp">
       <Filter>04.RenderResource\00.Manager</Filter>
     </ClCompile>
-    <ClCompile Include="RenderItemContainer.cpp">
+    <ClCompile Include="RenderDefaultRegistry.cpp">
       <Filter>03.RenderItem\00.Container</Filter>
     </ClCompile>
     <ClCompile Include="PixelShader.cpp">
@@ -106,6 +109,9 @@
       <Filter>02.RenderPipeline</Filter>
     </ClCompile>
     <ClCompile Include="RenderGroup.cpp">
+      <Filter>02.RenderPipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewProjBuffer.cpp">
       <Filter>02.RenderPipeline</Filter>
     </ClCompile>
   </ItemGroup>

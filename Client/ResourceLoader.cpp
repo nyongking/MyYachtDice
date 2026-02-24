@@ -18,7 +18,6 @@ bool ResourceLoader::LoadVertexShader(bool deferred, const std::wstring& path, c
 				
 				if (!blobLoaded)
 					return;
-
 			});
 	}
 	else

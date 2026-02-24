@@ -22,7 +22,7 @@
     <ClInclude Include="PixelShader.h" />
     <ClInclude Include="RenderGroup.h" />
     <ClInclude Include="ShaderGroup.h" />
-    <ClInclude Include="RenderItemContainer.h" />
+    <ClInclude Include="RenderDefaultRegistry.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="QuadTex.h" />
@@ -37,12 +37,13 @@
     <ClInclude Include="RenderTypes.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="VertexShader.h" />
+    <ClInclude Include="ViewProjBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="RenderGroup.cpp" />
     <ClCompile Include="ShaderGroup.cpp" />
-    <ClCompile Include="RenderItemContainer.cpp" />
+    <ClCompile Include="RenderDefaultRegistry.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="QuadTex.cpp" />
@@ -59,6 +60,7 @@
     <ClCompile Include="RenderResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="VertexShader.cpp" />
+    <ClCompile Include="ViewProjBuffer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

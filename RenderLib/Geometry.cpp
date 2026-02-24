@@ -3,8 +3,11 @@
 
 namespace Render
 {
-	void Geometry::BindAndDraw(ID3D11DeviceContext* pContext)
+	bool Geometry::BindAndDraw(ID3D11DeviceContext* pContext)
 	{
+		if (nullptr == pContext || nullptr == m_vb || nullptr == m_ib)
+			return false;
+
 		UINT32 offset = 0;
 		pContext->IASetVertexBuffers(0, 1, m_vb.GetAddressOf(), &m_vertexStride, &offset);
 		pContext->IASetPrimitiveTopology(m_topology);
@@ -12,6 +15,8 @@ namespace Render
 
 		// draw
 		pContext->DrawIndexed(m_indexCount, 0, 0);
+
+		return true;
 	}
 
 	bool Geometry::CreateIB(ID3D11Device* pDevice, std::vector<unsigned __int16> indices)
