@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="RenderPch.h">
+      <Filter>999.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice.h">
+      <Filter>00.Device</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTypes.h">
+      <Filter>999.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderGlobal.h">
+      <Filter>999.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>01.Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPipeline.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderItem.h">
+      <Filter>03.RenderItem</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>04.RenderResource\01.Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTex.h">
+      <Filter>04.RenderResource\01.Geometry\Quad</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderBuffer.h">
+      <Filter>05.RenderBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>04.RenderResource\03.Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexShader.h">
+      <Filter>04.RenderResource\03.Shader\01.VertexShader</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderResourceManager.h">
+      <Filter>04.RenderResource\00.Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderItemContainer.h">
+      <Filter>03.RenderItem\00.Container</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelShader.h">
+      <Filter>04.RenderResource\03.Shader\02.PixelShader</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderGroup.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderGroup.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RenderPch.cpp">
+      <Filter>999.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice.cpp">
+      <Filter>00.Device</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderGlobal.cpp">
+      <Filter>999.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>01.Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPipeline.cpp">
+      <Filter>02.RenderPipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderItem.cpp">
+      <Filter>03.RenderItem</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>04.RenderResource\01.Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTex.cpp">
+      <Filter>04.RenderResource\01.Geometry\Quad</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderBuffer.cpp">
+      <Filter>05.RenderBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>04.RenderResource\03.Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexShader.cpp">
+      <Filter>04.RenderResource\03.Shader\01.VertexShader</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderResourceManager.cpp">
+      <Filter>04.RenderResource\00.Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderItemContainer.cpp">
+      <Filter>03.RenderItem\00.Container</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelShader.cpp">
+      <Filter>04.RenderResource\03.Shader\02.PixelShader</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderGroup.cpp">
+      <Filter>02.RenderPipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderGroup.cpp">
+      <Filter>02.RenderPipeline</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="999.Default">
+      <UniqueIdentifier>{ec255198-52ec-450e-aa5a-ef1b2ccf2b26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00.Device">
+      <UniqueIdentifier>{3935387c-bf0d-4999-a936-5d8a71b6ccf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Renderer">
+      <UniqueIdentifier>{5af7c13c-3418-4284-ade5-8f06a5b0ef9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.RenderItem">
+      <UniqueIdentifier>{c0a55ce7-cb3a-4ab7-a341-afacc3f1f006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource">
+      <UniqueIdentifier>{38edaa22-c0a1-460c-abd8-cc0a0a982b12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\01.Geometry">
+      <UniqueIdentifier>{f987f82b-5e9c-41db-8d92-e836a4585c43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\01.Geometry\Quad">
+      <UniqueIdentifier>{0160211f-0541-47ab-9e2b-34cb09d0ab8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05.RenderBuffer">
+      <UniqueIdentifier>{4af4ee17-bf72-4f90-b965-4617f47ee5cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\02.Material">
+      <UniqueIdentifier>{ea837cd4-5241-4a65-94ec-0ad96c1cf0fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\03.Shader">
+      <UniqueIdentifier>{e5120c49-71a0-4cad-b343-1e3467719d62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\00.Manager">
+      <UniqueIdentifier>{a53ba391-f193-47e0-960f-7c82a0f634f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.RenderItem\00.Container">
+      <UniqueIdentifier>{da7950ed-aa02-4a85-ab35-ae813fcc81b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\03.Shader\01.VertexShader">
+      <UniqueIdentifier>{7d595ed3-b42a-4982-88d0-c9e01866510e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\03.Shader\02.PixelShader">
+      <UniqueIdentifier>{1a62b308-db9d-46c5-8fcf-2a7dd0bd5298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.RenderPipeline">
+      <UniqueIdentifier>{eec695a5-999d-45a6-83e3-45aa7f454ff4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
