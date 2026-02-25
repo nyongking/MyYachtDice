@@ -21,12 +21,12 @@ namespace Render
 		m_depthTexture.Reset();
 		m_depthstencilView.Reset();
 
-		m_pDevice = RenderDevice::GetInstance().m_device.Get();
-		m_pContext = RenderDevice::GetInstance().m_context.Get();
+		m_device = RenderDevice::GetInstance().m_device;
+		m_context = RenderDevice::GetInstance().m_context;
 
 #pragma region Swapchain
 		IDXGIDevice* pDeviceTemp = nullptr;
-		m_pDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDeviceTemp);
+		m_device->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDeviceTemp);
 
 		IDXGIAdapter* pAdapter = nullptr;
 		pDeviceTemp->GetParent(__uuidof(IDXGIAdapter), (void**)&pAdapter);
@@ -58,7 +58,7 @@ namespace Render
 		SwapChain.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		SwapChain.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-		if (FAILED(pFactory->CreateSwapChain(m_pDevice, &SwapChain, m_swapchain.GetAddressOf())))
+		if (FAILED(pFactory->CreateSwapChain(m_device.Get(), &SwapChain, m_swapchain.GetAddressOf())))
 			return false;
 
 		pFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
@@ -75,7 +75,7 @@ namespace Render
 		if (FAILED(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBufferTexture)))
 			return false;
 
-		if (FAILED(m_pDevice->CreateRenderTargetView(pBackBufferTexture, nullptr, m_backbufferRTV.GetAddressOf())))
+		if (FAILED(m_device->CreateRenderTargetView(pBackBufferTexture, nullptr, m_backbufferRTV.GetAddressOf())))
 			return false;
 
 		pBackBufferTexture->Release();
@@ -102,10 +102,10 @@ namespace Render
 		TextureDesc.CPUAccessFlags = 0;
 		TextureDesc.MiscFlags = 0;
 
-		if (FAILED(m_pDevice->CreateTexture2D(&TextureDesc, nullptr, &pDepthStencilTexture)))
+		if (FAILED(m_device->CreateTexture2D(&TextureDesc, nullptr, &pDepthStencilTexture)))
 			return false;
 
-		if (FAILED(m_pDevice->CreateDepthStencilView(pDepthStencilTexture, nullptr, m_depthstencilView.GetAddressOf())))
+		if (FAILED(m_device->CreateDepthStencilView(pDepthStencilTexture, nullptr, m_depthstencilView.GetAddressOf())))
 			return false;
 
 		pDepthStencilTexture->Release();
@@ -116,7 +116,7 @@ namespace Render
 			m_backbufferRTV.Get(),
 		};
 
-		m_pContext->OMSetRenderTargets(1, pRTVs,
+		m_context->OMSetRenderTargets(1, pRTVs,
 			m_depthstencilView.Get());
 
 		D3D11_VIEWPORT			ViewPortDesc;
@@ -128,7 +128,7 @@ namespace Render
 		ViewPortDesc.MinDepth = 0.f;
 		ViewPortDesc.MaxDepth = 1.f;
 
-		m_pContext->RSSetViewports(1, &ViewPortDesc);
+		m_context->RSSetViewports(1, &ViewPortDesc);
 #pragma endregion
 
 #pragma region DefaultSamplers
@@ -160,13 +160,13 @@ namespace Render
 
 			RefCom<ID3D11SamplerState> samplerState;
 
-			if (FAILED(m_pDevice->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf())))
+			if (FAILED(m_device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf())))
 				return false;
 
 			m_samplers.push_back(samplerState);
 
 			// 傈开 技泼
-			m_pContext->PSSetSamplers(0, 1, m_samplers[0].GetAddressOf());
+			m_context->PSSetSamplers(0, 1, m_samplers[0].GetAddressOf());
 		}
 
 		{
@@ -184,13 +184,13 @@ namespace Render
 
 			RefCom<ID3D11SamplerState> samplerState;
 
-			if (FAILED(m_pDevice->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf())))
+			if (FAILED(m_device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf())))
 				return false;
 
 			m_samplers.push_back(samplerState);
 
 			// 傈开 技泼
-			m_pContext->PSSetSamplers(1, 1, m_samplers[1].GetAddressOf());
+			m_context->PSSetSamplers(1, 1, m_samplers[1].GetAddressOf());
 		}
 
 		return true;
@@ -198,8 +198,8 @@ namespace Render
 
 	void Renderer::RenderBegin(DirectX::XMFLOAT4 clearColor)
 	{
-		m_pContext->ClearRenderTargetView(m_backbufferRTV.Get(), &clearColor.x);
-		m_pContext->ClearDepthStencilView(m_depthstencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+		m_context->ClearRenderTargetView(m_backbufferRTV.Get(), &clearColor.x);
+		m_context->ClearDepthStencilView(m_depthstencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 	}
 

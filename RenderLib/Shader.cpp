@@ -11,7 +11,7 @@ namespace Render
 		D3D11_SHADER_DESC shaderDesc;
 		m_reflection->GetDesc(&shaderDesc);
 
-        // cbuffers
+        // cbuffers,
         for (UINT i = 0; i < shaderDesc.ConstantBuffers; ++i) 
         {
             ID3D11ShaderReflectionConstantBuffer* pCB = m_reflection->GetConstantBufferByIndex(i);
@@ -22,7 +22,6 @@ namespace Render
             info.name = cbDesc.Name;
             info.size = cbDesc.Size;
 
-            // 변수들 상세 정보 파싱
             for (UINT j = 0; j < cbDesc.Variables; ++j) 
             {
                 ID3D11ShaderReflectionVariable* pVar = pCB->GetVariableByIndex(j);
@@ -35,7 +34,7 @@ namespace Render
             m_cbuffers.push_back(info);
         }
 
-        // resources (texture, samplers)
+        // resources (all type)
         for (UINT i = 0; i < shaderDesc.BoundResources; ++i) 
         {
             D3D11_SHADER_INPUT_BIND_DESC resDesc;
@@ -43,10 +42,31 @@ namespace Render
 
             ResourceBindInfo resInfo;
             resInfo.name = resDesc.Name;
-            resInfo.type = resDesc.Type;
             resInfo.slot = resDesc.BindPoint; // 예: t0에서 0
+            
+            int index = -1;
 
-            m_resources.push_back(resInfo);
+            switch (resDesc.Type)
+            {
+            case D3D_SIT_CBUFFER:
+                index = SHADER_INPUT_TYPE::CBUFFER;
+                break;
+            case D3D_SIT_TEXTURE:
+                index = SHADER_INPUT_TYPE::TEXTURE;
+                break;
+            case D3D_SIT_SAMPLER:
+                index = SHADER_INPUT_TYPE::SAMPLER;
+                break;
+            case D3D_SIT_STRUCTURED:
+                index = SHADER_INPUT_TYPE::STRUCTURED_BUFFER;
+                break;
+            case D3D_SIT_UAV_RWSTRUCTURED:
+                index = SHADER_INPUT_TYPE::UAV_BUFFER;
+                break;
+            }
+
+            if (0 <= index)
+                m_resources[index].push_back(resInfo);
         }
 
 		return true;

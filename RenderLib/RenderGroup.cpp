@@ -1,6 +1,8 @@
 #include "RenderPch.h"
 #include "RenderGroup.h"
 
+#include "ViewProjManager.h"
+
 namespace Render
 {
 	RenderGroup::RenderGroup(uint32_t id)

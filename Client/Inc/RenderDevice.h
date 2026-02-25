@@ -16,6 +16,7 @@ namespace Render
 
 		friend class Renderer;
 		friend class RenderResourceManager;
+		friend class ConstantBufferManager;
 
 	public:
 		RenderDevice();

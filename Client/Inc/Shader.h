@@ -5,31 +5,46 @@
 
 namespace Render
 {
-	struct ResourceBindInfo
+	enum SHADER_INPUT_TYPE
+	{
+		CBUFFER,
+		TEXTURE,
+		SAMPLER,
+		STRUCTURED_BUFFER,
+		UAV_BUFFER,
+		INPUT_TYPE_END
+	};
+
+	/*struct ResourceBindInfo
 	{
 		std::string name;
 		D3D_SHADER_INPUT_TYPE type;
 		uint32_t slot;
-	};
-
-	struct ShaderVariableInfo
-	{
-		std::string name;
-		uint32_t startOffset;
-		uint32_t size;
-	};
-
-	struct ConstantBufferInfo
-	{
-		std::string name;
-		uint32_t slot;
-		uint32_t size;
-		std::vector<ShaderVariableInfo> variables;
-	};
-
+	};*/
 
 	class Shader abstract
 	{
+		struct ResourceBindInfo
+		{
+			std::string name;
+			uint32_t slot;
+		};
+
+		struct ConstBufferVariableInfo
+		{
+			std::string name;
+			uint32_t startOffset;
+			uint32_t size;
+		};
+
+		struct ConstantBufferInfo
+		{
+			std::string name;
+			uint32_t slot;
+			uint32_t size;
+			std::vector<ConstBufferVariableInfo> variables;
+		};
+
 	public:
 		Shader() = default;
 		virtual ~Shader() = default;
@@ -44,7 +59,8 @@ namespace Render
 		bool			 m_isCreated = false;
 
 		std::vector<ConstantBufferInfo> m_cbuffers;
-		std::vector<ResourceBindInfo> m_resources;
+		std::vector<ResourceBindInfo>	m_resources[INPUT_TYPE_END];
+
 
 		RefCom<ID3DBlob> m_shaderBlob;
 		RefCom<ID3DBlob> m_errorBlob;

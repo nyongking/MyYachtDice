@@ -40,8 +40,8 @@ namespace Render
 		std::shared_ptr<class PixelShader> GetPixelShader(const std::wstring& path);
 
 	private:
-		ID3D11Device*			m_pDevice = nullptr;
-		ID3D11DeviceContext*	m_pContext = nullptr;
+		RefCom<ID3D11Device>			m_device = nullptr;
+		RefCom<ID3D11DeviceContext>		m_context = nullptr;
 		
 		ResourceContainer<class Geometry, std::wstring>		m_geometries;
 		ResourceContainer<class VertexShader, std::wstring> m_vertexShaderContainer;

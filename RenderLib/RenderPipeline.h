@@ -14,9 +14,8 @@ namespace Render
 	enum RenderOrder // RenderGroup Default
 	{
 		PRIORITY = 1,
-		NEXT_PRIORITY = 2,
 		DEFAULT = 4,
-		NEXT_DEFAULT = 5,
+
 
 		// TODO: 기본 추가 예정.
 	};

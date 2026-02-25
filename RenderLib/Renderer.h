@@ -26,8 +26,8 @@ namespace Render
 		void RenderEnd();		// 화면 바꾸기
 
 	private:
-		ID3D11Device* m_pDevice = nullptr;
-		ID3D11DeviceContext* m_pContext = nullptr;
+		RefCom<ID3D11Device> m_device = nullptr;
+		RefCom<ID3D11DeviceContext> m_context = nullptr;
 
 		RefCom<IDXGISwapChain>			m_swapchain;
 		RefCom<ID3D11RenderTargetView>	m_backbufferRTV;

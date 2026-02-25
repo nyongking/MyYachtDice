@@ -7,7 +7,7 @@ namespace Render
 {
 	uint32_t CalculateRenderOrder(RenderOrder order, uint32_t argument)
 	{
-		uint32_t renderOrder = order;
+		/*uint32_t renderOrder = order;
 
 		switch (order)
 		{
@@ -22,9 +22,9 @@ namespace Render
 			renderOrder += argument;
 			break;
 		}
-		}
+		}*/
 
-		return renderOrder;
+		return order + argument;
 	}
 
 	bool RenderPipeline::Initialize()

@@ -29,7 +29,7 @@
       <Filter>04.RenderResource\01.Geometry\Quad</Filter>
     </ClInclude>
     <ClInclude Include="RenderBuffer.h">
-      <Filter>05.RenderBuffer</Filter>
+      <Filter>05.Buffers</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>04.RenderResource\02.Material</Filter>
@@ -55,9 +55,23 @@
     <ClInclude Include="RenderGroup.h">
       <Filter>02.RenderPipeline</Filter>
     </ClInclude>
-    <ClInclude Include="ViewProjBuffer.h">
-      <Filter>02.RenderPipeline</Filter>
+    <ClInclude Include="ViewProjMatrix.h">
+      <Filter>06.ViewProj</Filter>
     </ClInclude>
+    <ClInclude Include="ViewProjManager.h">
+      <Filter>06.ViewProj</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorMaterial.h">
+      <Filter>04.RenderResource\02.Material\Color</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBuffer.h">
+      <Filter>05.Buffers\ConstantBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBufferManager.h">
+      <Filter>05.Buffers\ConstantBuffer\ConstBufferManager</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCountBlock.h" />
+    <ClInclude Include="MaterialParameter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderPch.cpp">
@@ -85,7 +99,7 @@
       <Filter>04.RenderResource\01.Geometry\Quad</Filter>
     </ClCompile>
     <ClCompile Include="RenderBuffer.cpp">
-      <Filter>05.RenderBuffer</Filter>
+      <Filter>05.Buffers</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>04.RenderResource\02.Material</Filter>
@@ -111,9 +125,23 @@
     <ClCompile Include="RenderGroup.cpp">
       <Filter>02.RenderPipeline</Filter>
     </ClCompile>
-    <ClCompile Include="ViewProjBuffer.cpp">
-      <Filter>02.RenderPipeline</Filter>
+    <ClCompile Include="ViewProjMatrix.cpp">
+      <Filter>06.ViewProj</Filter>
     </ClCompile>
+    <ClCompile Include="ViewProjManager.cpp">
+      <Filter>06.ViewProj</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorMaterial.cpp">
+      <Filter>04.RenderResource\02.Material\Color</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantBuffer.cpp">
+      <Filter>05.Buffers\ConstantBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantBufferManager.cpp">
+      <Filter>05.Buffers\ConstantBuffer\ConstBufferManager</Filter>
+    </ClCompile>
+    <ClCompile Include="RefCountBlock.cpp" />
+    <ClCompile Include="MaterialParameter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="999.Default">
@@ -137,9 +165,6 @@
     <Filter Include="04.RenderResource\01.Geometry\Quad">
       <UniqueIdentifier>{0160211f-0541-47ab-9e2b-34cb09d0ab8f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="05.RenderBuffer">
-      <UniqueIdentifier>{4af4ee17-bf72-4f90-b965-4617f47ee5cf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="04.RenderResource\02.Material">
       <UniqueIdentifier>{ea837cd4-5241-4a65-94ec-0ad96c1cf0fb}</UniqueIdentifier>
     </Filter>
@@ -160,6 +185,24 @@
     </Filter>
     <Filter Include="02.RenderPipeline">
       <UniqueIdentifier>{eec695a5-999d-45a6-83e3-45aa7f454ff4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="06.ViewProj">
+      <UniqueIdentifier>{21d6a0ae-7a77-47e8-8f22-18f2d12dc1a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\02.Material\Color">
+      <UniqueIdentifier>{41b480cd-7e2d-41f4-bdc6-69e37902a933}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05.Buffers">
+      <UniqueIdentifier>{4af4ee17-bf72-4f90-b965-4617f47ee5cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05.Buffers\ConstantBuffer">
+      <UniqueIdentifier>{45f9e4a0-5faa-4194-a043-ea48a672fbe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05.Buffers\ConstantBuffer\ConstBufferManager">
+      <UniqueIdentifier>{0b163a59-96c4-4f04-a24b-728ae4632203}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.Util">
+      <UniqueIdentifier>{af7e17b6-95f8-4a5b-885d-488fbc1a13aa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -5,6 +5,8 @@
 #include "Renderer.h"
 #include "RenderResourceManager.h"
 #include "RenderPipeline.h"
+#include "ConstantBufferManager.h"
+#include "ViewProjManager.h"
 
 namespace Render
 {
@@ -21,6 +23,12 @@ namespace Render
 
 		if (false == RenderPipeline::GetInstance().Initialize())
 			return false;
+
+		if (false == ConstantBufferManager::GetInstance().Initialize())
+			return false;
+
+		// instantiate
+		ViewProjManager::GetInstance();
 
 		return true;
 	}

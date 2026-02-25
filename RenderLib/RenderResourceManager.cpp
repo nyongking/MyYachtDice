@@ -21,10 +21,10 @@ namespace Render
 	bool RenderResourceManager::Initialize()
 	{
 		// get device
-		m_pDevice = RenderDevice::GetInstance().m_device.Get();
-		m_pContext = RenderDevice::GetInstance().m_context.Get();
+		m_device = RenderDevice::GetInstance().m_device;
+		m_context = RenderDevice::GetInstance().m_context;
 
-		RenderDefaultRegistry::GetInstance().RegisterDefaultRenderItems(m_pDevice);
+		RenderDefaultRegistry::GetInstance().RegisterDefaultRenderItems(m_device.Get());
 
 		return true;
 	}
@@ -92,7 +92,7 @@ namespace Render
 			return false;
 		}
 
-		if (!iter->second->CreateFromShaderBlob(m_pDevice))
+		if (!iter->second->CreateFromShaderBlob(m_device.Get()))
 		{
 			std::wstring msg = L"VertexShader CreateFromShaderBlob Failed : " + path;
 			OutputDebugStringW(msg.c_str());
@@ -178,7 +178,7 @@ namespace Render
 			return false;
 		}
 
-		if (!iter->second->CreateFromShaderBlob(m_pDevice))
+		if (!iter->second->CreateFromShaderBlob(m_device.Get()))
 		{
 			std::wstring msg = L"PixelShader CreateFromShaderBlob Failed : " + path;
 			OutputDebugStringW(msg.c_str());

@@ -27,6 +27,8 @@ namespace Render
 		vertices.push_back(VTXPOSTEX{ XMFLOAT3(0.5f, -0.5f, 0.f), XMFLOAT2(1.f, 1.f) });
 		vertices.push_back(VTXPOSTEX{ XMFLOAT3(-0.5f, -0.5f, 0.f), XMFLOAT2(0.f, 1.f) });
 
+
+
 		if (false == CreateVB(pDevice, vertices))
 			return false;
 

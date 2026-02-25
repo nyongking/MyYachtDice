@@ -19,7 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ColorMaterial.h" />
+    <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="ConstantBufferManager.h" />
+    <ClInclude Include="MaterialParameter.h" />
     <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="RefCountBlock.h" />
     <ClInclude Include="RenderGroup.h" />
     <ClInclude Include="ShaderGroup.h" />
     <ClInclude Include="RenderDefaultRegistry.h" />
@@ -37,10 +42,16 @@
     <ClInclude Include="RenderTypes.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="VertexShader.h" />
-    <ClInclude Include="ViewProjBuffer.h" />
+    <ClInclude Include="ViewProjManager.h" />
+    <ClInclude Include="ViewProjMatrix.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ColorMaterial.cpp" />
+    <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="ConstantBufferManager.cpp" />
+    <ClCompile Include="MaterialParameter.cpp" />
     <ClCompile Include="PixelShader.cpp" />
+    <ClCompile Include="RefCountBlock.cpp" />
     <ClCompile Include="RenderGroup.cpp" />
     <ClCompile Include="ShaderGroup.cpp" />
     <ClCompile Include="RenderDefaultRegistry.cpp" />
@@ -60,7 +71,8 @@
     <ClCompile Include="RenderResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="VertexShader.cpp" />
-    <ClCompile Include="ViewProjBuffer.cpp" />
+    <ClCompile Include="ViewProjManager.cpp" />
+    <ClCompile Include="ViewProjMatrix.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -8,6 +8,7 @@ namespace Render
 		, m_pixelShader(ps)
 	{
 	}
+
 	ShaderGroup::~ShaderGroup()
 	{
 	}
