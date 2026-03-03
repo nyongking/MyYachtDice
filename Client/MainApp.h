@@ -1,5 +1,5 @@
 #pragma once
-//#include "FrameTimer.h"
+#include "Timer.h"
 
 class MainApp
 {
@@ -12,9 +12,11 @@ public:
 	void Loop();
 
 private:
+	uint32_t          m_camID = 0;
+	GameEngine::Timer m_timer;
+
 #ifdef _DEBUG
-	TCHAR								m_szBuf[64];
+	TCHAR m_szBuf[64];
 #endif
-	//FrameTimer							m_frameTimer;
 };
 

@@ -1,48 +1,35 @@
 #pragma once
-#include "RenderGroup.h"
-
-// itemµé
-// - mesh*
-// - material*
-// - transform(world)
-
-// Áß¿äÇÑ°Ç renderorder ¼ø Á¤·Ä -> shader group º°·Î Á¤·Ä!
-// ±×·¯¸é renderItem -> material -> shader groupÀ» ÂüÁ¶ÇØ¼­ µî·Ï..
+#include "RenderPass.h"
 
 namespace Render
 {
-	enum RenderOrder // RenderGroup Default
-	{
-		PRIORITY = 1,
-		DEFAULT = 4,
-
-
-		// TODO: ±âº» Ãß°¡ ¿¹Á¤.
-	};
-
 	class RenderPipeline
 	{
-#pragma region Singleton
 	public:
 		static RenderPipeline& GetInstance()
 		{
 			static RenderPipeline instance;
-
 			return instance;
 		}
-#pragma endregion Singleton
 
-	public:
-		RenderPipeline() = default;
-		~RenderPipeline() = default;
-	
 	public:
 		bool Initialize();
-		bool RegisterRenderGroup(RenderOrder order, uint32_t argument);
-		bool AddShaderGroup(RenderOrder order, uint32_t argument, std::shared_ptr<class ShaderGroup> shaderGroup);
+
+		// ê²Œì„ ì˜¤ë¸Œì íŠ¸ê°€ ë§¤ í”„ë ˆì„ í˜¸ì¶œ
+		void Submit(RenderPass::Layer layer, const RenderCommand& cmd);
+
+		// Rendererê°€ í”„ë ˆì„ë§ˆë‹¤ í˜¸ì¶œ
+		void BeginFrame();
+		void Execute(ID3D11DeviceContext* ctx);
+		void EndFrame();
 
 	private:
-		std::map<uint32_t, std::unique_ptr<class RenderGroup>> m_renderGroups;
+		RenderPipeline() = default;
+		~RenderPipeline() = default;
+		RenderPipeline(const RenderPipeline&)            = delete;
+		RenderPipeline& operator=(const RenderPipeline&) = delete;
+
+		static constexpr int PASS_COUNT = static_cast<int>(RenderPass::Layer::COUNT);
+		std::array<std::unique_ptr<RenderPass>, PASS_COUNT> m_passes;
 	};
 }
-

@@ -28,10 +28,11 @@ namespace Render
 		const float4x4* GetViewProjByID(uint32_t id) const;
 		const float4x4* GetInverseViewByID(uint32_t id) const;
 
-		const float4x4* GetCurrentView() const { return GetViewByID(m_currentID); }
-		const float4x4* GetCurrentProj() const { return GetProjByID(m_currentID); }
-		const float4x4* GetCurrentViewProj() const { return GetViewProjByID(m_currentID); }
-		const float4x4* GetCurrentInverseView() const { return GetInverseViewByID(m_currentID); }
+		// m_currentID는 ChangeCurrent가 저장한 0-based 인덱스
+		const float4x4* GetCurrentView() const { return (m_currentID < m_viewprojs.size()) ? m_viewprojs[m_currentID]->GetView() : nullptr; }
+		const float4x4* GetCurrentProj() const { return (m_currentID < m_viewprojs.size()) ? m_viewprojs[m_currentID]->GetProj() : nullptr; }
+		const float4x4* GetCurrentViewProj() const { return (m_currentID < m_viewprojs.size()) ? m_viewprojs[m_currentID]->GetViewProj() : nullptr; }
+		const float4x4* GetCurrentInverseView() const { return (m_currentID < m_viewprojs.size()) ? m_viewprojs[m_currentID]->GetInverseView() : nullptr; }
 
 		bool UpdateViewByID(uint32_t id, fmatrix view);
 		bool UpdateProjByID(uint32_t id, fmatrix proj);

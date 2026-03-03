@@ -6,12 +6,14 @@
 #include <tchar.h>
 
 // std
+#include <array>
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <list>
 #include <string>
 #include <memory>
+#include <algorithm>
 
 // dx11
 #pragma comment (lib, "d3d11.lib")
@@ -25,3 +27,5 @@
 // includes
 #include "RenderTypes.h"
 #include "RenderGlobal.h"
+
+#pragma warning(disable : 4819)

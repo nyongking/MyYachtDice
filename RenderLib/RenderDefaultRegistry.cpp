@@ -6,6 +6,9 @@
 #include "PixelShader.h"
 #include "ShaderGroup.h"
 
+#include "ColorMaterial.h"
+#include "DefaultColorMaterial.h"
+
 namespace Render
 {
 	RenderDefaultRegistry::RenderDefaultRegistry()
@@ -21,47 +24,81 @@ namespace Render
 		if (nullptr == pDevice)
 			return false;
 
-		// QuadTex
+		// geometry
 		{
 			auto geo = std::make_shared<QuadTex>();
+
+			if (false == geo->DefaultCreateBuffers(pDevice))
+				return false;
+
+			m_geometries.push_back(std::move(geo));
+		}
+
+		// shader
+		{
 			auto vs = std::make_shared<VertexShader>();
 			auto ps = std::make_shared<PixelShader>();
 
-			geo->DefaultCreateBuffers(pDevice);
+			if (false == vs->LoadFromFile(L"./Bin/Default/Shader/VSPOSTEX.hlsl"))
+				return false;
+			if (false == vs->CreateFromShaderBlob(pDevice))
+				return false;
 
-			vs->LoadFromFile(L"./Bin/Default/Shader/VSPOSTEX.hlsl");
-			vs->CreateFromShaderBlob(pDevice);
+			if (false == ps->LoadFromFile(L"./Bin/Default/Shader/PSPOSTEX.hlsl"))
+				return false;
+			if (false == ps->CreateFromShaderBlob(pDevice))
+				return false;
 
-			ps->LoadFromFile(L"./Bin/Default/Shader/PSPOSTEX.hlsl");
-			ps->CreateFromShaderBlob(pDevice);
+			auto shaderGroup = std::make_shared<ShaderGroup>();
+			if (false == shaderGroup->Initialize(vs, ps, pDevice))
+				return false;
 
-			auto shaderGroup = std::make_shared<ShaderGroup>(vs, ps);
+			m_shaders.push_back(std::move(shaderGroup));
+		}
 
-			auto item = std::make_unique<DefaultRenderItemGroup>();
-			item->geometry = std::move(geo);
-			item->shaderGroup = std::move(shaderGroup);
+		// material
+		{
+			// MAT_COLOR (index 0)
+			auto colorMat = std::make_shared<ColorMaterial>();
 
-			m_defaultRenderItems.push_back(std::move(item));
+			if (false == colorMat->Initialize(m_shaders[SHADER_QUAD_TEX].get()))
+				return false;
+
+			m_materials.push_back(std::move(colorMat));
+
+			// MAT_DEFAULT_COLOR (index 1)
+			auto defaultColorMat = std::make_shared<DefaultColorMaterial>();
+
+			if (false == defaultColorMat->Initialize(m_shaders[SHADER_QUAD_TEX].get()))
+				return false;
+
+			m_materials.push_back(std::move(defaultColorMat));
 		}
 
 		return true;
 	}
 
-	std::shared_ptr<class Geometry> RenderDefaultRegistry::GetGeometry(DefaultRenderItemType type)
+	std::shared_ptr<class Geometry> RenderDefaultRegistry::GetGeometry(GeometryType type)
 	{
-		if (m_defaultRenderItems.size() <= type)
+		if (static_cast<size_t>(type) >= m_geometries.size())
 			return nullptr;
 
-		return m_defaultRenderItems[type]->geometry;
+		return m_geometries[type];
 	}
 
-	std::shared_ptr<class ShaderGroup> RenderDefaultRegistry::GetShaderGroup(DefaultRenderItemType type)
+	std::shared_ptr<class ShaderGroup> RenderDefaultRegistry::GetShaderGroup(ShaderType type)
 	{
-		if (m_defaultRenderItems.size() <= type)
+		if (static_cast<size_t>(type) >= m_shaders.size())
 			return nullptr;
 
-		return m_defaultRenderItems[type]->shaderGroup;
+		return m_shaders[type];
 	}
 
+	std::shared_ptr<class Material> RenderDefaultRegistry::GetMaterial(MaterialType type)
+	{
+		if (static_cast<size_t>(type) >= m_materials.size())
+			return nullptr;
+
+		return m_materials[type];
+	}
 }
-

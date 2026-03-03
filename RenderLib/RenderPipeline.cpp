@@ -1,69 +1,39 @@
 #include "RenderPch.h"
 #include "RenderPipeline.h"
 
-#include "RenderDefaultRegistry.h"
-
 namespace Render
 {
-	uint32_t CalculateRenderOrder(RenderOrder order, uint32_t argument)
-	{
-		/*uint32_t renderOrder = order;
-
-		switch (order)
-		{
-		case RenderOrder::PRIORITY:
-		case RenderOrder::DEFAULT:
-		{
-			break;
-		}
-		case RenderOrder::NEXT_PRIORITY:
-		case RenderOrder::NEXT_DEFAULT:
-		{
-			renderOrder += argument;
-			break;
-		}
-		}*/
-
-		return order + argument;
-	}
-
 	bool RenderPipeline::Initialize()
 	{
-		RegisterRenderGroup(PRIORITY, 0);
-		RegisterRenderGroup(DEFAULT, 0);
-
-		// TODO: Priority Group
-
-		// Default Group
-		{
-			if (false == AddShaderGroup(DEFAULT, 0, RenderDefaultRegistry::GetInstance().GetShaderGroup(QUAD_TEX)))
-				return false;
-		}
+		for (int i = 0; i < PASS_COUNT; ++i)
+			m_passes[i] = std::make_unique<RenderPass>(static_cast<RenderPass::Layer>(i));
 
 		return true;
 	}
 
-	bool RenderPipeline::RegisterRenderGroup(RenderOrder order, uint32_t argument)
-	{	
-		uint32_t renderOrder = CalculateRenderOrder(order, argument);
-
-		if (m_renderGroups.find(renderOrder) != m_renderGroups.end())
-			return false;
-
-		m_renderGroups.emplace(renderOrder, std::make_unique<RenderGroup>(renderOrder));
-
-		return true;
-	}
-
-	bool RenderPipeline::AddShaderGroup(RenderOrder order, uint32_t argument, std::shared_ptr<class ShaderGroup> shaderGroup)
+	void RenderPipeline::Submit(RenderPass::Layer layer, const RenderCommand& cmd)
 	{
-		uint32_t renderOrder = CalculateRenderOrder(order, argument);
+		int idx = static_cast<int>(layer);
+		if (idx < 0 || idx >= PASS_COUNT)
+			return;
 
-		auto it = m_renderGroups.find(renderOrder);
+		m_passes[idx]->Submit(cmd);
+	}
 
-		if (it == m_renderGroups.end())
-			return false;
+	void RenderPipeline::BeginFrame()
+	{
+		for (auto& pass : m_passes)
+			pass->Clear();
+	}
 
-		return it->second->AddShaderGroup(shaderGroup);
+	void RenderPipeline::Execute(ID3D11DeviceContext* ctx)
+	{
+		for (auto& pass : m_passes)
+			pass->Execute(ctx);
+	}
+
+	void RenderPipeline::EndFrame()
+	{
+		// 현재는 BeginFrame에서 큐를 비우므로 별도 처리 없음
 	}
 }

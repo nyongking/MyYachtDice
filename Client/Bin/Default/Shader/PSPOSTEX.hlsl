@@ -1,7 +1,12 @@
+cbuffer ColorBuffer : register(b0)
+{
+    float4 g_color;
+};
+
 struct PS_IN
 {
-    float4 position : SV_Position;
-    float2 texcoord : TEXCOORD0;
+    float4 pos : SV_Position;
+    float2 uv  : TEXCOORD0;
 };
 
 struct PS_OUT
@@ -9,16 +14,9 @@ struct PS_OUT
     float4 color : SV_TARGET0;
 };
 
-SamplerState PointSampler : register(s0);
-SamplerState LinearSampler : register(s1);
-Texture2D DiffuseTexture : register(t0);
-
 PS_OUT main(PS_IN input)
 {
-    PS_OUT Out = (PS_OUT) 0;
-    
-    Out.color = DiffuseTexture.Sample(LinearSampler, input.texcoord);
-    
-    return Out;
-
+    PS_OUT o;
+    o.color = g_color;
+    return o;
 }

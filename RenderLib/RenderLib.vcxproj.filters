@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="RenderPch.h">
@@ -17,6 +17,12 @@
       <Filter>01.Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RenderPipeline.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPass.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTargetGroup.h">
       <Filter>02.RenderPipeline</Filter>
     </ClInclude>
     <ClInclude Include="RenderItem.h">
@@ -52,9 +58,6 @@
     <ClInclude Include="ShaderGroup.h">
       <Filter>02.RenderPipeline</Filter>
     </ClInclude>
-    <ClInclude Include="RenderGroup.h">
-      <Filter>02.RenderPipeline</Filter>
-    </ClInclude>
     <ClInclude Include="ViewProjMatrix.h">
       <Filter>06.ViewProj</Filter>
     </ClInclude>
@@ -64,14 +67,24 @@
     <ClInclude Include="ColorMaterial.h">
       <Filter>04.RenderResource\02.Material\Color</Filter>
     </ClInclude>
+    <ClInclude Include="DefaultColorMaterial.h">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClInclude>
     <ClInclude Include="ConstantBuffer.h">
       <Filter>05.Buffers\ConstantBuffer</Filter>
     </ClInclude>
     <ClInclude Include="ConstantBufferManager.h">
       <Filter>05.Buffers\ConstantBuffer\ConstBufferManager</Filter>
     </ClInclude>
-    <ClInclude Include="RefCountBlock.h" />
-    <ClInclude Include="MaterialParameter.h" />
+    <ClInclude Include="MaterialParameter.h">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCountBlock.h">
+      <Filter>99.Util</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialSlot.h">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderPch.cpp">
@@ -87,6 +100,12 @@
       <Filter>01.Renderer</Filter>
     </ClCompile>
     <ClCompile Include="RenderPipeline.cpp">
+      <Filter>02.RenderPipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPass.cpp">
+      <Filter>02.RenderPipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTargetGroup.cpp">
       <Filter>02.RenderPipeline</Filter>
     </ClCompile>
     <ClCompile Include="RenderItem.cpp">
@@ -122,9 +141,6 @@
     <ClCompile Include="ShaderGroup.cpp">
       <Filter>02.RenderPipeline</Filter>
     </ClCompile>
-    <ClCompile Include="RenderGroup.cpp">
-      <Filter>02.RenderPipeline</Filter>
-    </ClCompile>
     <ClCompile Include="ViewProjMatrix.cpp">
       <Filter>06.ViewProj</Filter>
     </ClCompile>
@@ -134,14 +150,24 @@
     <ClCompile Include="ColorMaterial.cpp">
       <Filter>04.RenderResource\02.Material\Color</Filter>
     </ClCompile>
+    <ClCompile Include="DefaultColorMaterial.cpp">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClCompile>
     <ClCompile Include="ConstantBuffer.cpp">
       <Filter>05.Buffers\ConstantBuffer</Filter>
     </ClCompile>
     <ClCompile Include="ConstantBufferManager.cpp">
       <Filter>05.Buffers\ConstantBuffer\ConstBufferManager</Filter>
     </ClCompile>
-    <ClCompile Include="RefCountBlock.cpp" />
-    <ClCompile Include="MaterialParameter.cpp" />
+    <ClCompile Include="MaterialParameter.cpp">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClCompile>
+    <ClCompile Include="RefCountBlock.cpp">
+      <Filter>99.Util</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialSlot.cpp">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="999.Default">

@@ -90,6 +90,11 @@ namespace Render
         return true;
     }
 
+    void PixelShader::Bind(ID3D11DeviceContext* ctx)
+    {
+        ctx->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+    }
+
 }
 
 

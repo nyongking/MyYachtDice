@@ -54,6 +54,8 @@ namespace Render
 
 		virtual bool LoadFromFile(const std::wstring& path, const std::string& entry = "main", const std::string& profile = "") abstract;
 		virtual bool CreateFromShaderBlob(ID3D11Device* pDevice) abstract;
+
+		int			 ConstantBufferSlot(const std::string& name, uint32_t size);
 		
 	protected:
 		bool			 m_isCreated = false;

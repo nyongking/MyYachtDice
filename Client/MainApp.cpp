@@ -5,11 +5,16 @@
 #include "MainThreadQueue.h"
 
 #include "Renderer.h"
-#include "RenderResourceManager.h"
+#include "RenderDevice.h"
+#include "RenderPipeline.h"
+#include "ViewProjManager.h"
+#include "SceneManager.h"
+#include "QuadColorScene.h"
 
 MainApp::MainApp()
 {
 }
+
 MainApp::~MainApp()
 {
 	ReleaseGame();
@@ -19,14 +24,11 @@ MainApp::~MainApp()
 
 void DoWorkerJob()
 {
-	//CoInitialize(nullptr);
-
 	const uint64 WORKER_TICK = 25;
 	const uint64 WAIT_TICK = 3;
 	while (GRunning)
 	{
 		DoGlobalWork(WORKER_TICK, WAIT_TICK);
-
 	}
 }
 
@@ -39,50 +41,51 @@ bool MainApp::Init()
 	}
 
 	InitGame();
-	
 
-	
+	// 카메라 설정
+	m_camID = Render::ViewProjManager::GetInstance().CreateViewProj();
+
+	using namespace DirectX;
+	XMMATRIX view = XMMatrixLookAtLH(
+		XMVectorSet(0.f, 0.f, -5.f, 1.f),
+		XMVectorSet(0.f, 0.f,  0.f, 1.f),
+		XMVectorSet(0.f, 1.f,  0.f, 0.f));
+	XMMATRIX proj = XMMatrixPerspectiveFovLH(XM_PIDIV4, 16.f / 9.f, 0.1f, 1000.f);
+
+	Render::ViewProjManager::GetInstance().UpdateViewProjByID(m_camID, view, proj);
+	Render::ViewProjManager::GetInstance().ChangeCurrent(m_camID);
+
+	GameEngine::SceneManager::GetInstance().LoadScene<QuadColorScene>();
+
+	m_timer.Reset();
+	m_timer.SetTargetFPS(60);
 
 	return true;
 }
 
 void MainApp::Loop()
 {
-	float time = 0.f;
+	m_timer.Tick();
+	if (!m_timer.IsFrameReady())
+		return;
 
+	const float dt = m_timer.GetDeltaTime();
+
+	Render::RenderPipeline::GetInstance().BeginFrame();           // ① 큐 초기화 (Submit 전)
+
+	// ── Game Update + Submit ──
+	GameEngine::SceneManager::GetInstance().Update(dt);
+
+	// ── Render ──
 	Render::Renderer::GetInstance().RenderBegin();
+	Render::RenderPipeline::GetInstance().Execute(
+		Render::RenderDevice::GetInstance().GetContext());
 	Render::Renderer::GetInstance().RenderEnd();
-
-	/*if (m_frameTimer.IsUpdate(&time))
-	{
-		UpdateInput();
-
-		if (KeyState(LBUTTON, KEY_DOWN))
-		{
-			ChangeScene(1, 0, nullptr);
-
-		}
-
-		UpdateScene(time);
-		RenderScene();
-
-		RenderBegin();
-		Render();
-		RenderEnd();
-
-		EndofScene();
-
-#ifdef _DEBUG
-		{
-			USHORT fps = 0, maxfps = 0;
-			
-			m_frameTimer.GetFps(&fps, &maxfps);
-			swprintf_s(m_szBuf, L"FPS : %d, MaxFPS : %d", fps, maxfps);
-			SetWindowText(GetWnd(), m_szBuf);
-		}
-#endif
-	}*/
 
 	GMainQueue->ExecuteAll();
 
+#ifdef _DEBUG
+	wsprintf(m_szBuf, TEXT("FPS: %d  dt: %.4f"), m_timer.GetFPS(), dt);
+	SetWindowText(wnd, m_szBuf);
+#endif
 }

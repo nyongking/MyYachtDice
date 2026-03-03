@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="999.Default">
+      <UniqueIdentifier>{3cf0210f-581a-41e5-bc56-50c3c06d5e25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00.Object">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Component">
+      <UniqueIdentifier>{b2c3d4e5-f6a7-8901-bcde-f12345678901}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Scene">
+      <UniqueIdentifier>{c3d4e5f6-a7b8-9012-cdef-012345678902}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameEnginePch.h">
+      <Filter>999.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineTypes.h">
+      <Filter>999.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>999.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>01.Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>01.Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>00.Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>02.Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>02.Scene</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GameEnginePch.cpp">
+      <Filter>999.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>999.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>01.Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>01.Component</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>00.Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>02.Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>02.Scene</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

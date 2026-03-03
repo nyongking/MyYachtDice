@@ -1,36 +1,28 @@
 #pragma once
-
 namespace Render
 {
-	// ÇÔ¼ö 1. Æ¯Á¤ render order¿¡ µî·Ï(pipeline), render number ÃßÃâ
 	class ShaderGroup
 	{
 	public:
 		ShaderGroup() = default;
-		ShaderGroup(std::shared_ptr<class VertexShader> vs, std::shared_ptr<class PixelShader> ps);
-		~ShaderGroup();
-
-		friend class RenderGroup;
+		~ShaderGroup() = default;
 
 	public:
-		bool operator==(const ShaderGroup& other)
-		{
-			if ((m_renderID != 0 && other.m_renderID != 0)
-				&& m_renderID == other.m_renderID)
-				return true;
+		// VS blob/reflectionì„ ì‚¬ìš©í•´ InputLayout ìë™ ìƒì„±
+		bool Initialize(std::shared_ptr<class VertexShader> vs,
+			std::shared_ptr<class PixelShader> ps,
+			ID3D11Device* device);
 
-			if (other.m_vertexShader != m_vertexShader
-				|| other.m_pixelShader != m_pixelShader)
-				return false;
+		// Stage 2 (InputLayout) + Stage 4 (VS/PS) í•œë²ˆì— ë°”ì¸ë“œ
+		void BindShaderAndLayout(ID3D11DeviceContext* ctx);
 
-			return true;
-		}
+		int VSConstantBufferSlot(const std::string& name, uint32_t size) const;
+		int PSConstantBufferSlot(const std::string& name, uint32_t size) const;
 
 	private:
-		uint32_t		m_renderID = 0;
-		// ÃßÈÄ µî·Ï (GS..)
+		RefCom<ID3D11InputLayout>          m_inputLayout;
 		std::shared_ptr<class VertexShader> m_vertexShader;
-		std::shared_ptr<class PixelShader> m_pixelShader;
+		std::shared_ptr<class PixelShader>  m_pixelShader;
 	};
 
 

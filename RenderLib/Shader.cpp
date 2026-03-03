@@ -42,7 +42,7 @@ namespace Render
 
             ResourceBindInfo resInfo;
             resInfo.name = resDesc.Name;
-            resInfo.slot = resDesc.BindPoint; // ¿¹: t0¿¡¼­ 0
+            resInfo.slot = resDesc.BindPoint; // ï¿½ï¿½: t0ï¿½ï¿½ï¿½ï¿½ 0
             
             int index = -1;
 
@@ -71,4 +71,23 @@ namespace Render
 
 		return true;
 	}
+
+    int Shader::ConstantBufferSlot(const std::string& name, uint32_t size)
+    {
+        // m_cbuffers has size info, m_resources[CBUFFER] has slot info
+        // cross-reference by name
+        for (auto& cbInfo : m_cbuffers)
+        {
+            if (cbInfo.size != size || 0 != strcmp(cbInfo.name.c_str(), name.c_str()))
+                continue;
+
+            for (auto& res : m_resources[CBUFFER])
+            {
+                if (0 == strcmp(res.name.c_str(), name.c_str()))
+                    return static_cast<int>(res.slot);
+            }
+        }
+
+        return -1;
+    }
 }

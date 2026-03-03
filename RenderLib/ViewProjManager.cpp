@@ -75,7 +75,7 @@ namespace Render
 		if (--id >= m_viewprojs.size())
 			return false;
 
-		m_viewprojs[id]->UpdateView(proj);
+		m_viewprojs[id]->UpdateProj(proj);
 
 		return true;
 	}

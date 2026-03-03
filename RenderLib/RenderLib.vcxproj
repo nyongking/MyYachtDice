@@ -20,12 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColorMaterial.h" />
+    <ClInclude Include="DefaultColorMaterial.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferManager.h" />
     <ClInclude Include="MaterialParameter.h" />
+    <ClInclude Include="MaterialSlot.h" />
     <ClInclude Include="PixelShader.h" />
     <ClInclude Include="RefCountBlock.h" />
-    <ClInclude Include="RenderGroup.h" />
+    <ClInclude Include="RenderPass.h" />
+    <ClInclude Include="RenderTargetGroup.h" />
     <ClInclude Include="ShaderGroup.h" />
     <ClInclude Include="RenderDefaultRegistry.h" />
     <ClInclude Include="Geometry.h" />
@@ -47,12 +50,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ColorMaterial.cpp" />
+    <ClCompile Include="DefaultColorMaterial.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="ConstantBufferManager.cpp" />
     <ClCompile Include="MaterialParameter.cpp" />
+    <ClCompile Include="MaterialSlot.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="RefCountBlock.cpp" />
-    <ClCompile Include="RenderGroup.cpp" />
+    <ClCompile Include="RenderPass.cpp" />
+    <ClCompile Include="RenderTargetGroup.cpp" />
     <ClCompile Include="ShaderGroup.cpp" />
     <ClCompile Include="RenderDefaultRegistry.cpp" />
     <ClCompile Include="Geometry.cpp" />

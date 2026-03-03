@@ -117,7 +117,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;GameEngineLib.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd /d $(ProjectDir)
@@ -141,7 +141,7 @@ call UpdateLib.bat</Command>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;GameEngineLib.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd /d $(ProjectDir)
@@ -154,6 +154,8 @@ call UpdateLib.bat</Command>
     <ClInclude Include="ClientPch.h" />
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="ObjectEnum.h" />
+    <ClInclude Include="QuadColorScene.h" />
+    <ClInclude Include="QuadComponent.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceLoader.h" />
   </ItemGroup>
@@ -165,6 +167,8 @@ call UpdateLib.bat</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MainApp.cpp" />
+    <ClCompile Include="QuadColorScene.cpp" />
+    <ClCompile Include="QuadComponent.cpp" />
     <ClCompile Include="ResourceLoader.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -4,9 +4,10 @@
 #include "RenderDevice.h"
 #include "Renderer.h"
 #include "RenderResourceManager.h"
-#include "RenderPipeline.h"
 #include "ConstantBufferManager.h"
 #include "ViewProjManager.h"
+#include "RenderDefaultRegistry.h"
+#include "RenderPipeline.h"
 
 namespace Render
 {
@@ -18,17 +19,18 @@ namespace Render
 		if (false == Renderer::GetInstance().Initialize(window, sizeX, sizeY, hwnd))
 			return false;
 
+		if (false == ConstantBufferManager::GetInstance().Initialize())
+			return false;
+
 		if (false == RenderResourceManager::GetInstance().Initialize())
+			return false;
+
+		if (false == RenderDefaultRegistry::GetInstance().RegisterDefaultRenderItems(
+			RenderDevice::GetInstance().GetDevice()))
 			return false;
 
 		if (false == RenderPipeline::GetInstance().Initialize())
 			return false;
-
-		if (false == ConstantBufferManager::GetInstance().Initialize())
-			return false;
-
-		// instantiate
-		ViewProjManager::GetInstance();
 
 		return true;
 	}

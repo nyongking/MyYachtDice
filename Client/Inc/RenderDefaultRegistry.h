@@ -2,18 +2,23 @@
 
 namespace Render
 {
-	enum DefaultRenderItemType
+	enum GeometryType
 	{
-		QUAD_TEX = 0,
+		GEO_QUAD_TEX = 0,
 	};
 
-	struct DefaultRenderItemGroup
+	enum MaterialType
 	{
-		std::shared_ptr<class Geometry>		geometry;
-		std::shared_ptr<class ShaderGroup>	shaderGroup;
+		MAT_COLOR         = 0,
+		MAT_DEFAULT_COLOR = 1,
 	};
 
-	// ÇÊ¼öÀûÀ¸·Î ¾²ÀÏ °ÍµéÀ» ¿©±â¿¡ ÀúÀåÇÑ´Ù.
+	enum ShaderType
+	{
+		SHADER_QUAD_TEX = 0,
+	};
+
+	// ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Íµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	class RenderDefaultRegistry
 	{
 #pragma region Singleton
@@ -32,12 +37,15 @@ namespace Render
 
 	public:
 		bool RegisterDefaultRenderItems(ID3D11Device* pDevice); // Initialize
-		
-		std::shared_ptr<class Geometry>		GetGeometry(DefaultRenderItemType type);
-		std::shared_ptr<class ShaderGroup>	GetShaderGroup(DefaultRenderItemType type);
+
+		std::shared_ptr<class Geometry>		GetGeometry(GeometryType type);
+		std::shared_ptr<class ShaderGroup>	GetShaderGroup(ShaderType type);
+		std::shared_ptr<class Material>		GetMaterial(MaterialType type);
 
 	private:
-		std::vector<std::unique_ptr<DefaultRenderItemGroup>> m_defaultRenderItems;
+		std::vector<std::shared_ptr<class Material>>			m_materials;
+		std::vector<std::shared_ptr<class Geometry>>			m_geometries;
+		std::vector<std::shared_ptr<class ShaderGroup>>			m_shaders;
 	};
 
 }

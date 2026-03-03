@@ -17,6 +17,12 @@
     <Filter Include="01.ResourceLoader">
       <UniqueIdentifier>{e7428dbc-1bd5-4f3a-b4cc-8362b94aea26}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.Component">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Scene">
+      <UniqueIdentifier>{b2c3d4e5-f6a7-8901-bcde-f12345678901}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -39,6 +45,12 @@
     </ClInclude>
     <ClInclude Include="ResourceLoader.h">
       <Filter>01.ResourceLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadComponent.h">
+      <Filter>02.Component</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadColorScene.h">
+      <Filter>03.Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +81,12 @@
     </ClCompile>
     <ClCompile Include="ResourceLoader.cpp">
       <Filter>01.ResourceLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadComponent.cpp">
+      <Filter>02.Component</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadColorScene.cpp">
+      <Filter>03.Scene</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
