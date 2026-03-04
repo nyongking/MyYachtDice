@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ColorMaterial.h" />
     <ClInclude Include="DefaultColorMaterial.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferManager.h" />
@@ -30,18 +29,14 @@
     <ClInclude Include="RenderPass.h" />
     <ClInclude Include="RenderTargetGroup.h" />
     <ClInclude Include="ShaderGroup.h" />
-    <ClInclude Include="RenderDefaultRegistry.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Material.h" />
-    <ClInclude Include="QuadTex.h" />
-    <ClInclude Include="RenderBuffer.h" />
     <ClInclude Include="RenderDevice.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderGlobal.h" />
     <ClInclude Include="RenderItem.h" />
     <ClInclude Include="RenderPch.h" />
     <ClInclude Include="RenderPipeline.h" />
-    <ClInclude Include="RenderResourceManager.h" />
     <ClInclude Include="RenderTypes.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="VertexShader.h" />
@@ -49,7 +44,6 @@
     <ClInclude Include="ViewProjMatrix.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ColorMaterial.cpp" />
     <ClCompile Include="DefaultColorMaterial.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="ConstantBufferManager.cpp" />
@@ -60,11 +54,8 @@
     <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="RenderTargetGroup.cpp" />
     <ClCompile Include="ShaderGroup.cpp" />
-    <ClCompile Include="RenderDefaultRegistry.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Material.cpp" />
-    <ClCompile Include="QuadTex.cpp" />
-    <ClCompile Include="RenderBuffer.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderGlobal.cpp" />
@@ -74,7 +65,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RenderPipeline.cpp" />
-    <ClCompile Include="RenderResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="VertexShader.cpp" />
     <ClCompile Include="ViewProjManager.cpp" />

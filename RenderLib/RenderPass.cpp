@@ -50,7 +50,8 @@ namespace Render
 			}
 
 			// Stage 5: Material CBs 바인드
-			cmd.material->BindMaterial();
+			if (false == cmd.material->BindMaterial(ctx))
+				continue;
 
 			// Stage 6: Geometry VB/IB 바인드 + DrawIndexed
 			cmd.geometry->BindAndDraw(ctx);

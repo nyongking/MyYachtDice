@@ -1,6 +1,9 @@
 #include "ClientPch.h"
 #include "MainApp.h"
 
+#include <timeapi.h>
+#pragma comment(lib, "winmm.lib")
+
 #include "ThreadManager.h"
 #include "MainThreadQueue.h"
 
@@ -17,6 +20,7 @@ MainApp::MainApp()
 
 MainApp::~MainApp()
 {
+	timeEndPeriod(1);
 	ReleaseGame();
 	ReleaseServerCore();
 	ReleaseCore();
@@ -57,8 +61,9 @@ bool MainApp::Init()
 
 	GameEngine::SceneManager::GetInstance().LoadScene<QuadColorScene>();
 
+	timeBeginPeriod(1);
 	m_timer.Reset();
-	m_timer.SetTargetFPS(60);
+	m_timer.SetTargetFPS(144);
 
 	return true;
 }
@@ -67,7 +72,10 @@ void MainApp::Loop()
 {
 	m_timer.Tick();
 	if (!m_timer.IsFrameReady())
+	{
+		Sleep(1);
 		return;
+	}
 
 	const float dt = m_timer.GetDeltaTime();
 
@@ -81,11 +89,12 @@ void MainApp::Loop()
 	Render::RenderPipeline::GetInstance().Execute(
 		Render::RenderDevice::GetInstance().GetContext());
 	Render::Renderer::GetInstance().RenderEnd();
+	Render::RenderPipeline::GetInstance().EndFrame();
 
 	GMainQueue->ExecuteAll();
 
 #ifdef _DEBUG
-	wsprintf(m_szBuf, TEXT("FPS: %d  dt: %.4f"), m_timer.GetFPS(), dt);
+	wsprintf(m_szBuf, TEXT("FPS: %d / dt: %.4f"), m_timer.GetFPS(), dt);
 	SetWindowText(wnd, m_szBuf);
 #endif
 }

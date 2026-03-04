@@ -153,11 +153,9 @@ call UpdateLib.bat</Command>
     <ClInclude Include="ClientGlobal.h" />
     <ClInclude Include="ClientPch.h" />
     <ClInclude Include="MainApp.h" />
-    <ClInclude Include="ObjectEnum.h" />
     <ClInclude Include="QuadColorScene.h" />
     <ClInclude Include="QuadComponent.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ResourceLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
@@ -169,7 +167,6 @@ call UpdateLib.bat</Command>
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="QuadColorScene.cpp" />
     <ClCompile Include="QuadComponent.cpp" />
-    <ClCompile Include="ResourceLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc" />

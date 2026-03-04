@@ -11,6 +11,7 @@ namespace Render
 
 	public:
 		virtual bool Initialize(ShaderGroup* pShaderGroup) override;
+		std::unique_ptr<Material> Clone() const override;
 
 		void SetViewProj(const float4x4& vp) override { m_viewProj = vp; }
 		void SetWorld(const float4x4& w)     override { m_world    = w;  }

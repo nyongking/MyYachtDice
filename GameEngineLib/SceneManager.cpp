@@ -8,7 +8,10 @@ namespace GameEngine
 		ApplyPendingScene();
 
 		if (m_currentScene)
+		{
 			m_currentScene->Update(dt);
+			m_currentScene->LateUpdate(dt);
+		}
 	}
 
 	void SceneManager::ApplyPendingScene()

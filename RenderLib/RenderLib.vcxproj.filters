@@ -10,9 +10,6 @@
     <ClInclude Include="RenderTypes.h">
       <Filter>999.Default</Filter>
     </ClInclude>
-    <ClInclude Include="RenderGlobal.h">
-      <Filter>999.Default</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>01.Renderer</Filter>
     </ClInclude>
@@ -31,12 +28,6 @@
     <ClInclude Include="Geometry.h">
       <Filter>04.RenderResource\01.Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="QuadTex.h">
-      <Filter>04.RenderResource\01.Geometry\Quad</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderBuffer.h">
-      <Filter>05.Buffers</Filter>
-    </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>04.RenderResource\02.Material</Filter>
     </ClInclude>
@@ -45,12 +36,6 @@
     </ClInclude>
     <ClInclude Include="VertexShader.h">
       <Filter>04.RenderResource\03.Shader\01.VertexShader</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderResourceManager.h">
-      <Filter>04.RenderResource\00.Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderDefaultRegistry.h">
-      <Filter>03.RenderItem\00.Container</Filter>
     </ClInclude>
     <ClInclude Include="PixelShader.h">
       <Filter>04.RenderResource\03.Shader\02.PixelShader</Filter>
@@ -63,12 +48,6 @@
     </ClInclude>
     <ClInclude Include="ViewProjManager.h">
       <Filter>06.ViewProj</Filter>
-    </ClInclude>
-    <ClInclude Include="ColorMaterial.h">
-      <Filter>04.RenderResource\02.Material\Color</Filter>
-    </ClInclude>
-    <ClInclude Include="DefaultColorMaterial.h">
-      <Filter>04.RenderResource\02.Material</Filter>
     </ClInclude>
     <ClInclude Include="ConstantBuffer.h">
       <Filter>05.Buffers\ConstantBuffer</Filter>
@@ -85,6 +64,12 @@
     <ClInclude Include="MaterialSlot.h">
       <Filter>04.RenderResource\02.Material</Filter>
     </ClInclude>
+    <ClInclude Include="DefaultColorMaterial.h">
+      <Filter>04.RenderResource\02.Material\Color</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderGlobal.h">
+      <Filter>99.Global</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderPch.cpp">
@@ -92,9 +77,6 @@
     </ClCompile>
     <ClCompile Include="RenderDevice.cpp">
       <Filter>00.Device</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderGlobal.cpp">
-      <Filter>999.Default</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>01.Renderer</Filter>
@@ -114,12 +96,6 @@
     <ClCompile Include="Geometry.cpp">
       <Filter>04.RenderResource\01.Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="QuadTex.cpp">
-      <Filter>04.RenderResource\01.Geometry\Quad</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderBuffer.cpp">
-      <Filter>05.Buffers</Filter>
-    </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>04.RenderResource\02.Material</Filter>
     </ClCompile>
@@ -128,12 +104,6 @@
     </ClCompile>
     <ClCompile Include="VertexShader.cpp">
       <Filter>04.RenderResource\03.Shader\01.VertexShader</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderResourceManager.cpp">
-      <Filter>04.RenderResource\00.Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderDefaultRegistry.cpp">
-      <Filter>03.RenderItem\00.Container</Filter>
     </ClCompile>
     <ClCompile Include="PixelShader.cpp">
       <Filter>04.RenderResource\03.Shader\02.PixelShader</Filter>
@@ -146,12 +116,6 @@
     </ClCompile>
     <ClCompile Include="ViewProjManager.cpp">
       <Filter>06.ViewProj</Filter>
-    </ClCompile>
-    <ClCompile Include="ColorMaterial.cpp">
-      <Filter>04.RenderResource\02.Material\Color</Filter>
-    </ClCompile>
-    <ClCompile Include="DefaultColorMaterial.cpp">
-      <Filter>04.RenderResource\02.Material</Filter>
     </ClCompile>
     <ClCompile Include="ConstantBuffer.cpp">
       <Filter>05.Buffers\ConstantBuffer</Filter>
@@ -167,6 +131,12 @@
     </ClCompile>
     <ClCompile Include="MaterialSlot.cpp">
       <Filter>04.RenderResource\02.Material</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultColorMaterial.cpp">
+      <Filter>04.RenderResource\02.Material\Color</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderGlobal.cpp">
+      <Filter>99.Global</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -188,20 +158,11 @@
     <Filter Include="04.RenderResource\01.Geometry">
       <UniqueIdentifier>{f987f82b-5e9c-41db-8d92-e836a4585c43}</UniqueIdentifier>
     </Filter>
-    <Filter Include="04.RenderResource\01.Geometry\Quad">
-      <UniqueIdentifier>{0160211f-0541-47ab-9e2b-34cb09d0ab8f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="04.RenderResource\02.Material">
       <UniqueIdentifier>{ea837cd4-5241-4a65-94ec-0ad96c1cf0fb}</UniqueIdentifier>
     </Filter>
     <Filter Include="04.RenderResource\03.Shader">
       <UniqueIdentifier>{e5120c49-71a0-4cad-b343-1e3467719d62}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="04.RenderResource\00.Manager">
-      <UniqueIdentifier>{a53ba391-f193-47e0-960f-7c82a0f634f1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03.RenderItem\00.Container">
-      <UniqueIdentifier>{da7950ed-aa02-4a85-ab35-ae813fcc81b5}</UniqueIdentifier>
     </Filter>
     <Filter Include="04.RenderResource\03.Shader\01.VertexShader">
       <UniqueIdentifier>{7d595ed3-b42a-4982-88d0-c9e01866510e}</UniqueIdentifier>
@@ -229,6 +190,9 @@
     </Filter>
     <Filter Include="99.Util">
       <UniqueIdentifier>{af7e17b6-95f8-4a5b-885d-488fbc1a13aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.Global">
+      <UniqueIdentifier>{95cce5ec-aefd-486d-bcd9-9dcfdf34f22e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

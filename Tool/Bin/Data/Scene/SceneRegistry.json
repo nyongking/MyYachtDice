@@ -1,0 +1,14 @@
+{
+  "Scene": [
+    {
+      "ID": 1,
+      "Path": "./Bin/Data/Scene/Scene001.json",
+      "Type": 1
+    },
+    {
+      "ID": 2,
+      "Path": "./Bin/Data/Scene/Scene002.json",
+      "Type": 1
+    }
+  ]
+}

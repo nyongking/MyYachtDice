@@ -10,13 +10,14 @@ namespace Render
 	{
 	public:
 		Material() = default;
+		Material(const Material& rhs);
 		virtual ~Material();
-
 
 	public:
 		virtual bool Initialize(ShaderGroup* shaderGroup) abstract;
+		virtual std::unique_ptr<Material> Clone() const = 0;
 
-		virtual void BindMaterial();
+		bool		 BindMaterial(ID3D11DeviceContext* pContext);
 
 		ShaderGroup* GetShaderGroup() const { return m_shaderGroup; }
 
@@ -31,7 +32,7 @@ namespace Render
 		bool		ConnectConstantBufferToPSSlot(const std::string& name, int index, class ShaderGroup* pShaderGroup);
 
 		template<typename T>
-		bool		AutomaticRegister(const std::string& name, const std::string& slotname, T* const pData, class ShaderGroup* pShaderGroup, bool isDynamic = true);
+		bool		AutomaticRegisterVS(const std::string& name, const std::string& slotname, T* const pData, class ShaderGroup* pShaderGroup, bool isDynamic = true);
 
 		template<typename T>
 		bool		AutomaticRegisterPS(const std::string& name, const std::string& slotname, T* const pData, class ShaderGroup* pShaderGroup, bool isDynamic = true);
@@ -62,7 +63,7 @@ namespace Render
 	}
 
 	template<typename T>
-	inline bool Material::AutomaticRegister(const std::string& name, const std::string& slotname, T* const pData, ShaderGroup* pShaderGroup, bool isDynamic)
+	inline bool Material::AutomaticRegisterVS(const std::string& name, const std::string& slotname, T* const pData, ShaderGroup* pShaderGroup, bool isDynamic)
 	{
 		int index = RegisterConstantBuffer(name, pData, isDynamic);
 

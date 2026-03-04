@@ -39,8 +39,8 @@ namespace Render
 		return DXGI_FORMAT_UNKNOWN;
 	}
 
-	bool ShaderGroup::Initialize(std::shared_ptr<VertexShader> vs,
-		std::shared_ptr<PixelShader> ps,
+	bool ShaderGroup::Initialize(VertexShader* vs,
+		PixelShader* ps,
 		ID3D11Device* device)
 	{
 		if (nullptr == vs || nullptr == ps || nullptr == device)

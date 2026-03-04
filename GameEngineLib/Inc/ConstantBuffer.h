@@ -25,7 +25,7 @@ namespace Render
 		static UINT Align16(UINT size) { return (size + 15u) & ~15u; }
 
 	private:
-		Render::RefCom<ID3D11Buffer> m_buffer;
+		RefCom<ID3D11Buffer> m_buffer;
 		
 		const uint64_t m_id = 0;
 		uint32_t m_size = 0;

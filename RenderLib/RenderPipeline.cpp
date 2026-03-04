@@ -22,8 +22,6 @@ namespace Render
 
 	void RenderPipeline::BeginFrame()
 	{
-		for (auto& pass : m_passes)
-			pass->Clear();
 	}
 
 	void RenderPipeline::Execute(ID3D11DeviceContext* ctx)
@@ -34,6 +32,7 @@ namespace Render
 
 	void RenderPipeline::EndFrame()
 	{
-		// 현재는 BeginFrame에서 큐를 비우므로 별도 처리 없음
+		for (auto& pass : m_passes)
+			pass->Clear();
 	}
 }

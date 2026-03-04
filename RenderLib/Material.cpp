@@ -1,9 +1,15 @@
 #include "RenderPch.h"
 #include "Material.h"
-#include "RenderDevice.h"
 
 namespace Render
 {
+	Material::Material(const Material& rhs)
+		: m_shaderGroup(rhs.m_shaderGroup)
+		, m_constantBufferParameters(rhs.m_constantBufferParameters)
+		, m_constantBufferSlots(rhs.m_constantBufferSlots)
+	{
+	}
+
 	Material::~Material()
 	{
 		for (auto& param : m_constantBufferParameters)
@@ -14,16 +20,20 @@ namespace Render
 		m_constantBufferParameters.clear();
 	}
 
-	void Material::BindMaterial()
+	bool Material::BindMaterial(ID3D11DeviceContext* pContext)
 	{
-		auto* ctx = RenderDevice::GetInstance().GetContext();
+		if (nullptr == pContext)
+			return false;
 
 		for (auto& param : m_constantBufferParameters)
-			param.Update(ctx);
+			param.Update(pContext);
 
 		for (auto& slot : m_constantBufferSlots)
-			slot.BindBufferToSlot();
+			slot.BindBufferToSlot(pContext);
+
+		return true;
 	}
+
 
 	int Material::RegisterConstantBufferSlot(class ConstantBuffer* pBuffer)
 	{

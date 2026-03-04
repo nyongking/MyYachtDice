@@ -25,8 +25,8 @@ namespace Render
 	public:
 		bool Initialize();
 
-		ID3D11Device*        GetDevice()  { return m_device.Get(); }
-		ID3D11DeviceContext* GetContext() { return m_context.Get(); }
+		RefCom<ID3D11Device>        GetDevice()  { return m_device; }
+		RefCom<ID3D11DeviceContext> GetContext() { return m_context; }
 
 	private:
 		RefCom<ID3D11Device>		m_device;

@@ -2,6 +2,16 @@
 
 Windows C++ 클라이언트 게임 프로젝트. DirectX 11 기반 커스텀 렌더링 엔진을 직접 구현합니다.
 
+
+
+## 개요
+
+1. 게임 'Yacht Dice'를 모방한 게임을 만듭니다. (예정)
+2. IOCP, TCP 서버를 이용하여 송수신을 합니다. (예정)
+3. 나만의 물리엔진 구현, 의도적인 물리적 버그를 활용하여 게임 컨텐츠에 활용합니다. (예정)
+
+
+
 ---
 
 ## 프로젝트 구조
@@ -27,15 +37,19 @@ YachtDice/
 ### 초기화 흐름
 
 ```
-InitRender(hwnd)
+// ── Client.cpp (WinMain) ──
+InitCore()
+
+Render::InitRender(true, sizeX, sizeY, hwnd)
   ├── RenderDevice::Initialize()          // D3D11 Device + DeviceContext 생성
   ├── Renderer::Initialize()              // SwapChain, BackBuffer RTV, DSV, Sampler 생성
   ├── ConstantBufferManager::Initialize() // 이름 기반 CB 공유 풀 초기화
-  ├── RenderResourceManager::Initialize() // 셰이더 파일 로드/캐시 초기화
-  ├── RenderDefaultRegistry::RegisterDefaultRenderItems()
-  │     ├── QuadTex Geometry 생성 (VB/IB)
-  │     └── ShaderGroup 생성 (VSPOSTEX + PSPOSTEX + InputLayout 반사 생성)
   └── RenderPipeline::Initialize()        // RenderPass 배열 초기화 (4개)
+
+// ── MainApp::Init() → InitGame() ──
+GameEngine::InitEngine()
+  ├── GeometryManager::Initialize()       // VB/IB 생성용 Device/Context 등록
+  └── ShaderManager::Initialize()         // VS/PS 로드·컴파일용 Device/Context 등록
 ```
 
 ---
@@ -166,10 +180,8 @@ cbuffer ColorBuffer : register(b0) { float4 g_color; }
 | `RenderDevice` | D3D11 Device / DeviceContext 보유 |
 | `Renderer` | SwapChain, BackBuffer RTV/DSV, Sampler |
 | `ConstantBufferManager` | 이름 기반 CB 공유 풀 |
-| `RenderResourceManager` | 셰이더 파일 로드·캐시 |
-| `RenderDefaultRegistry` | 기본 Geometry·ShaderGroup 등록 |
 | `RenderPipeline` | RenderPass 배열, Submit/Execute 관리 |
-| `ViewProjManager` | 카메라 View/Projection 행렬 |
+| `ViewProjManager` | 카메라 View/Projection 행렬 *(제거 예정)* |
 
 ---
 
@@ -324,11 +336,11 @@ SceneManager  (singleton)
 
 ### 타입 별칭
 
-`GameEngineLib/EngineTypes.h` 와 `RenderLib/RenderTypes.h` 에 동일한 이름으로 정의됩니다.
+`RenderLib/RenderTypes.h` 에 정의됩니다.
 두 별칭 모두 `DirectX::XMFLOAT*`의 alias이므로 실제 타입이 동일합니다.
 
 ```cpp
-// namespace GameEngine (EngineTypes.h)
+
 // namespace Render     (RenderTypes.h)  — 동일하게 정의
 using float2   = DirectX::XMFLOAT2;
 using float3   = DirectX::XMFLOAT3;
@@ -340,6 +352,34 @@ using fmatrix  = DirectX::FXMMATRIX;
 
 > GameEngineLib 헤더는 `EngineTypes.h`를 직접 포함해 self-contained를 유지합니다.
 > Client PCH(`ClientPch.h`)가 `EngineTypes.h`를 포함하지 않기 때문입니다.
+
+---
+
+### 리소스 매니저
+
+`GeometryManager`, `ShaderManager`, `MaterialManager` 세 싱글톤이 리소스를 캐시하며, 모두 `ResourceCache<T>`를 상속합니다. `InitEngine()`에서 Device/Context를 등록해야 동작합니다.
+
+| 싱글톤 | `Get()` 반환 | 역할 |
+|--------|-------------|------|
+| `GeometryManager` | `Geometry*` (공유 불변) | VB/IB 동기·비동기 로드·캐시 |
+| `ShaderManager` | `ShaderGroup*` (공유 불변) | VS+PS 로드 → ShaderGroup 생성·캐시 |
+| `MaterialManager` | `unique_ptr<Material>` (클론) | ShaderGroup 준비 후 Initialize, clone 반환 |
+
+```
+ResourceState: NotLoaded → Loading → Ready / Failed
+
+GeometryManager::LoadSync(key, geo)    // 메인 스레드에서 VB/IB 생성
+GeometryManager::LoadAsync(key, geo)   // I/O는 워커, GPU 생성은 메인으로 디스패치
+GeometryManager::Get(key)             // Ready 상태의 Geometry* 반환
+
+ShaderManager::LoadSync(key, vsPath, psPath)
+ShaderManager::Get(key)               // ShaderGroup* 반환
+
+MaterialManager::LoadSync(key, mat, shaderKey)
+MaterialManager::Get(key)             // Clone된 unique_ptr<Material> 반환
+```
+
+> `MaterialManager::Get()`은 매번 Clone을 반환합니다. GPU CB 버퍼는 `ConstantBufferManager`를 통해 공유되므로 복사 비용은 CPU 데이터 포인터 교체뿐입니다.
 
 ---
 
@@ -387,19 +427,25 @@ class QuadColorScene : public GameEngine::Scene
 {
 public:
     void Awake() override;
-private:
-    std::shared_ptr<Render::DefaultColorMaterial> m_material;
 };
 
 void QuadColorScene::Awake()
 {
-    m_material = std::make_shared<DefaultColorMaterial>();
-    m_material->Initialize(RenderDefaultRegistry::GetInstance()
-                               .GetShaderGroup(SHADER_QUAD_TEX).get());
-    m_material->SetColor({ 1.f, 0.f, 0.f, 1.f });   // 빨간색
+    auto& reg = Render::RenderDefaultRegistry::GetInstance();
 
+    // 빨간 쿼드 (원점)
+    auto redMat = std::make_shared<Render::DefaultColorMaterial>();
+    redMat->Initialize(reg.GetShaderGroup(Render::SHADER_QUAD_TEX).get());
+    redMat->SetColor({ 1.f, 0.f, 0.f, 1.f });
+    CreateGameObject("Quad")->AddComponent<QuadComponent>(redMat);
+
+    // 파란 쿼드 (Y +1 오프셋)
+    auto blueMat = std::make_shared<Render::DefaultColorMaterial>();
+    blueMat->Initialize(reg.GetShaderGroup(Render::SHADER_QUAD_TEX).get());
+    blueMat->SetColor({ 0.f, 0.5f, 1.f, 1.f });
     auto* go = CreateGameObject("Quad");
-    go->AddComponent<QuadComponent>(m_material);
+    go->AddComponent<QuadComponent>(blueMat);
+    go->GetTransform()->SetPosition(GameEngine::float3(0.f, 1.f, 0.f));
 }
 ```
 
@@ -409,7 +455,7 @@ void QuadColorScene::Awake()
 Client 메인 루프 (tight spin)
   └── MainApp::Loop()
         ├── Timer::Tick()
-        ├── !IsFrameReady() → return          ← CPU spin, 다음 틱 대기
+        ├── !IsFrameReady() → Sleep(1); return   ← CPU 스핀 완화
         │
         ├── dt = GetDeltaTime()               ← 마지막 프레임 이후 실제 경과 시간
         │
@@ -434,24 +480,30 @@ ViewProjManager::GetInstance().ChangeCurrent(m_camID);
 
 SceneManager::GetInstance().LoadScene<QuadColorScene>();
 
+timeBeginPeriod(1);    // 타이머 정밀도 1ms
 m_timer.Reset();
-m_timer.SetTargetFPS(60);
+m_timer.SetTargetFPS(144);
 ```
 
 ---
 
 ## 추후 작업
 
+### 진행 중 / 예정 (Plan.md 기준)
+- [ ] **Material Release 정리** — `Material::Release()` 경로 제거. `ConstantBufferManager`가 버퍼를 레퍼런스 카운트 대신 `unique_ptr`로 보유하도록 변경
+- [ ] **Clone 수정** — `Clone()` 시 `ConstantBufferParameter::m_pData`가 원본이 아닌 클론의 멤버를 가리키도록 교체. `Clone()`에서 `Initialize()` 호출 제거
+- [ ] **`ViewProjManager` 제거** — 뷰/프로젝션 데이터 관리 방식 교체
+- [ ] **`DefaultColorMaterial`을 Client / Tool로 이동** — `RenderLib`에 있어선 안 되는 소비자 계층 코드
+- [ ] **Assimp 모델 로딩** — Assimp로 메시 데이터를 로드하고 커스텀 파싱 파이프라인을 거쳐 `Geometry` 서브클래스로 변환
+
 ### RenderLib
-- [ ] Per-Object ConstantBuffer 바인딩 (`RenderCommand::cbPerObject` 활성화)
 - [ ] Transparent Pass — Back-to-Front 깊이 역순 정렬
 - [ ] Texture(SRV) 기준 정렬 추가 (6단계 5번)
 - [ ] G-Buffer용 `RenderTargetGroup` 연결 (지연 렌더링)
-- [ ] `ViewProjManager` → ConstantBuffer 연결 및 프레임마다 자동 업데이트
 
 ### GameEngineLib
 - [ ] `Input` 시스템 — 키보드/마우스 입력 처리
-- [ ] `Camera` 컴포넌트 — ViewProjManager 연동
+- [ ] `Camera` 컴포넌트 — 뷰/프로젝션 데이터 공급 방식 설계
 - [ ] 씬 전환 시 이전 씬 리소스 해제 흐름 정리
 
 ### Client

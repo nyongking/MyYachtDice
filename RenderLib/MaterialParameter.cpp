@@ -17,7 +17,7 @@ namespace Render
 	{
 		if (nullptr != m_buffer)
 		{
-			m_buffer->Release(); // Warning : release�� ������ �߸��Ǳ� ������..
+			m_buffer->Release(); // warning;
 		}
 
 		m_buffer.reset();

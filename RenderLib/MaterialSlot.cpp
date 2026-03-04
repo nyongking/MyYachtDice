@@ -26,18 +26,18 @@ namespace Render
 		return m_slotPS >= 0;
 	}
 
-	void ConstantBufferSlot::BindBufferToSlot()
+	bool ConstantBufferSlot::BindBufferToSlot(ID3D11DeviceContext* pContext)
 	{
-		if (nullptr == m_pBuffer)
-			return;
-
-		auto* ctx = RenderDevice::GetInstance().GetContext();
+		if (nullptr == m_pBuffer || nullptr == pContext)
+			return false;
 
 		if (m_slotVS >= 0)
-			m_pBuffer->BindVS(ctx, static_cast<uint32_t>(m_slotVS));
+			m_pBuffer->BindVS(pContext, static_cast<uint32_t>(m_slotVS));
 
 		if (m_slotPS >= 0)
-			m_pBuffer->BindPS(ctx, static_cast<uint32_t>(m_slotPS));
+			m_pBuffer->BindPS(pContext, static_cast<uint32_t>(m_slotPS));
+
+		return false;
 	}
 }
 

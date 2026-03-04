@@ -165,7 +165,7 @@ namespace Render
 
 			m_samplers.push_back(samplerState);
 
-			// Àü¿ª ¼¼ÆÃ
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			m_context->PSSetSamplers(0, 1, m_samplers[0].GetAddressOf());
 		}
 
@@ -189,7 +189,7 @@ namespace Render
 
 			m_samplers.push_back(samplerState);
 
-			// Àü¿ª ¼¼ÆÃ
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			m_context->PSSetSamplers(1, 1, m_samplers[1].GetAddressOf());
 		}
 
@@ -198,9 +198,11 @@ namespace Render
 
 	void Renderer::RenderBegin(DirectX::XMFLOAT4 clearColor)
 	{
+		ID3D11RenderTargetView* pRTVs[] = { m_backbufferRTV.Get() };
+		m_context->OMSetRenderTargets(1, pRTVs, m_depthstencilView.Get());
+
 		m_context->ClearRenderTargetView(m_backbufferRTV.Get(), &clearColor.x);
 		m_context->ClearDepthStencilView(m_depthstencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
-
 	}
 
 	void Renderer::RenderEnd()

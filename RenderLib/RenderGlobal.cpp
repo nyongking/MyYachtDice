@@ -3,10 +3,10 @@
 
 #include "RenderDevice.h"
 #include "Renderer.h"
-#include "RenderResourceManager.h"
+//#include "RenderResourceManager.h"
 #include "ConstantBufferManager.h"
 #include "ViewProjManager.h"
-#include "RenderDefaultRegistry.h"
+//#include "RenderDefaultRegistry.h"
 #include "RenderPipeline.h"
 
 namespace Render
@@ -22,12 +22,12 @@ namespace Render
 		if (false == ConstantBufferManager::GetInstance().Initialize())
 			return false;
 
-		if (false == RenderResourceManager::GetInstance().Initialize())
-			return false;
+		//if (false == RenderResourceManager::GetInstance().Initialize())
+		//	return false;
 
-		if (false == RenderDefaultRegistry::GetInstance().RegisterDefaultRenderItems(
+	/*	if (false == RenderDefaultRegistry::GetInstance().RegisterDefaultRenderItems(
 			RenderDevice::GetInstance().GetDevice()))
-			return false;
+			return false;*/
 
 		if (false == RenderPipeline::GetInstance().Initialize())
 			return false;

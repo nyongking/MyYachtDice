@@ -14,9 +14,6 @@
     <Filter Include="97.Enum">
       <UniqueIdentifier>{83888ab1-40e3-49e5-b794-84323acc5bc5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.ResourceLoader">
-      <UniqueIdentifier>{e7428dbc-1bd5-4f3a-b4cc-8362b94aea26}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02.Component">
       <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
     </Filter>
@@ -37,14 +34,8 @@
     <ClInclude Include="MainApp.h">
       <Filter>00.MainApp</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectEnum.h">
-      <Filter>97.Enum</Filter>
-    </ClInclude>
     <ClInclude Include="ClientGlobal.h">
       <Filter>999.Default</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceLoader.h">
-      <Filter>01.ResourceLoader</Filter>
     </ClInclude>
     <ClInclude Include="QuadComponent.h">
       <Filter>02.Component</Filter>
@@ -78,9 +69,6 @@
     </ClCompile>
     <ClCompile Include="ClientGlobal.cpp">
       <Filter>999.Default</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceLoader.cpp">
-      <Filter>01.ResourceLoader</Filter>
     </ClCompile>
     <ClCompile Include="QuadComponent.cpp">
       <Filter>02.Component</Filter>

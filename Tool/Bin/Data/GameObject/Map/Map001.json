@@ -1,0 +1,15 @@
+{
+  "Name": "Map001",
+  "Context": {
+    "Layer": 0,
+    "RenderPass": 1,
+    "Spawn": "Default"
+  },
+  "ObjectType" : "Map",
+  "Components": [
+    {
+      "Type": "Sprite",
+      "Texture": "./Bin/Resource/Texture/Map/MultiSoccer_back.img.back.5.dds"
+    }
+  ]
+}
