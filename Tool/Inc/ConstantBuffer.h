@@ -6,7 +6,6 @@ namespace Render
 	{
 	public:
 		ConstantBuffer() = default;
-		ConstantBuffer(uint64_t id);
 		~ConstantBuffer() = default;
 
 		bool Create(ID3D11Device* device, uint32_t byteWidth, const void* pInitialData, D3D11_USAGE usage = D3D11_USAGE_DYNAMIC);
@@ -27,7 +26,6 @@ namespace Render
 	private:
 		RefCom<ID3D11Buffer> m_buffer;
 		
-		const uint64_t m_id = 0;
 		uint32_t m_size = 0;
 		D3D11_USAGE m_usage = D3D11_USAGE_DEFAULT;
 	};

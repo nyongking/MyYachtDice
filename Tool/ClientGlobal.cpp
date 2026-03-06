@@ -11,5 +11,5 @@ void InitGame()
 
 void ReleaseGame()
 {
-
+    GameEngine::ReleaseEngine();
 }

@@ -12,5 +12,15 @@ xcopy			/y		..\ServerCoreLib\Bin\Release\ServerCoreLib.lib			.\Lib\Release\
 
 xcopy			/y		..\CoreLib\*.h									.\Inc\
 xcopy			/y		..\RenderLib\*.h								.\Inc\
-zxcopy			/y		..\ServerCoreLib\*.h							.\Inc\
+xcopy			/y		..\ServerCoreLib\*.h							.\Inc\
 xcopy			/y		..\GameEngineLib\*.h							.\Inc\
+
+xcopy			/y/s	..\RenderLib\Lib\Debug\*.*					.\Lib\Debug\
+xcopy			/y/s	..\RenderLib\Lib\Release\*.*				.\Lib\Release\
+
+xcopy			/y/s	..\RenderLib\Inc\*.*						.\Inc\
+
+xcopy			/y/s	..\GameEngineLib\Lib\Debug\*.*					.\Lib\Debug\
+xcopy			/y/s	..\GameEngineLib\Lib\Release\*.*				.\Lib\Release\
+
+xcopy			/y/s	..\GameEngineLib\Inc\*.*						.\Inc\

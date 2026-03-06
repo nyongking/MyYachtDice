@@ -4,8 +4,8 @@
 #include "RenderDevice.h"
 #include "Renderer.h"
 //#include "RenderResourceManager.h"
-#include "ConstantBufferManager.h"
-#include "ViewProjManager.h"
+//#include "ConstantBufferManager.h"
+//#include "ViewProjManager.h"
 //#include "RenderDefaultRegistry.h"
 #include "RenderPipeline.h"
 
@@ -19,8 +19,8 @@ namespace Render
 		if (false == Renderer::GetInstance().Initialize(window, sizeX, sizeY, hwnd))
 			return false;
 
-		if (false == ConstantBufferManager::GetInstance().Initialize())
-			return false;
+		//if (false == ConstantBufferManager::GetInstance().Initialize())
+		//	return false;
 
 		//if (false == RenderResourceManager::GetInstance().Initialize())
 		//	return false;

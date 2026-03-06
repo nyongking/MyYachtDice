@@ -31,9 +31,6 @@
     <Filter Include="03.Manager">
       <UniqueIdentifier>{1b2476ce-012c-4ae5-8ae3-69aab7952162}</UniqueIdentifier>
     </Filter>
-    <Filter Include="99.Struct">
-      <UniqueIdentifier>{80f57d2b-6151-4401-90d2-7edf6c841b3c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03.Manager\Resource">
       <UniqueIdentifier>{4e2d3b51-6adb-4f8a-bd8e-e4900c32bfe2}</UniqueIdentifier>
     </Filter>
@@ -45,6 +42,18 @@
     </Filter>
     <Filter Include="03.Manager\Resource\Material">
       <UniqueIdentifier>{e1a608d3-fc79-4c08-bad3-2689332d4fb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Component\CameraComponent">
+      <UniqueIdentifier>{76aa446a-30db-499b-b8ea-e56c07e61fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Manager\Resource\Texture">
+      <UniqueIdentifier>{7af6727d-352b-4f64-9bee-552390ae10ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Component\RenderComponent\ModelComponent">
+      <UniqueIdentifier>{f02ca4a0-3cb3-4a5b-a949-ff18df0df74b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Manager\Resource\Model">
+      <UniqueIdentifier>{a439ecf5-e0f0-4200-bf48-b79b1c19a1f4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -81,9 +90,6 @@
     <ClInclude Include="ResourceCache.h">
       <Filter>03.Manager</Filter>
     </ClInclude>
-    <ClInclude Include="EngineStruct.h">
-      <Filter>99.Struct</Filter>
-    </ClInclude>
     <ClInclude Include="GeometryManager.h">
       <Filter>03.Manager\Resource\Geometry</Filter>
     </ClInclude>
@@ -95,6 +101,21 @@
     </ClInclude>
     <ClInclude Include="MaterialManager.h">
       <Filter>03.Manager\Resource\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraComponent.h">
+      <Filter>01.Component\CameraComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>03.Manager\Resource\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>01.Component\RenderComponent\ModelComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>03.Manager\Resource\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelComponent.h">
+      <Filter>01.Component\RenderComponent\ModelComponent</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,9 +149,6 @@
     <ClCompile Include="EngineGlobal.cpp">
       <Filter>99.Global</Filter>
     </ClCompile>
-    <ClCompile Include="EngineStruct.cpp">
-      <Filter>99.Struct</Filter>
-    </ClCompile>
     <ClCompile Include="GeometryManager.cpp">
       <Filter>03.Manager\Resource\Geometry</Filter>
     </ClCompile>
@@ -142,6 +160,21 @@
     </ClCompile>
     <ClCompile Include="MaterialManager.cpp">
       <Filter>03.Manager\Resource\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>01.Component\CameraComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>03.Manager\Resource\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>01.Component\RenderComponent\ModelComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>03.Manager\Resource\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelComponent.cpp">
+      <Filter>01.Component\RenderComponent\ModelComponent</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

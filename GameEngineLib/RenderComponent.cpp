@@ -3,7 +3,8 @@
 
 #include "RenderItem.h"
 #include "RenderPipeline.h"
-#include "ViewProjManager.h"
+#include "SceneManager.h"
+#include "CameraComponent.h"
 #include "GameObject.h"
 #include "Transform.h"
 #include "Material.h"
@@ -18,9 +19,13 @@ namespace GameEngine
 		float4x4 world = GetOwner()->GetTransform()->GetWorldMatrix();
 		m_material->SetWorld(world);
 
-		const float4x4* pVP = Render::ViewProjManager::GetInstance().GetCurrentViewProj();
-		if (pVP)
-			m_material->SetViewProj(*pVP);
+		auto* cam = SceneManager::GetInstance().GetMainCamera();
+		if (cam)
+		{
+			const float4x4* pVP = cam->GetViewProj();
+			if (pVP)
+				m_material->SetViewProj(*pVP);
+		}
 
 		Render::RenderCommand cmd;
 

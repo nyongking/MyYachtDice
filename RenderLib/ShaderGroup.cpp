@@ -140,4 +140,20 @@ namespace Render
 
 		return m_pixelShader->ConstantBufferSlot(name, size);
 	}
+
+	int ShaderGroup::VSTextureSlot(const std::string& name) const
+	{
+		if (nullptr == m_vertexShader)
+			return -1;
+
+		return m_vertexShader->TextureSlot(name);
+	}
+
+	int ShaderGroup::PSTextureSlot(const std::string& name) const
+	{
+		if (nullptr == m_pixelShader)
+			return -1;
+
+		return m_pixelShader->TextureSlot(name);
+	}
 }

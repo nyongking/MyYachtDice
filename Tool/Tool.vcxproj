@@ -152,8 +152,14 @@ call UpdateLib.bat</Command>
     <ClInclude Include="Client.h" />
     <ClInclude Include="ClientGlobal.h" />
     <ClInclude Include="ClientPch.h" />
+    <ClInclude Include="ColorMaterial.h" />
+    <ClInclude Include="DiceMaterial.h" />
     <ClInclude Include="MainApp.h" />
-    <ClInclude Include="QuadColorScene.h" />
+    <ClInclude Include="ModelExporter.h" />
+    <ClInclude Include="ModelLoadScene.h" />
+    <ClInclude Include="ModelMaterial.h" />
+    <ClInclude Include="QuadTexMaterial.h" />
+    <ClInclude Include="TestScene.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -163,8 +169,14 @@ call UpdateLib.bat</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ColorMaterial.cpp" />
+    <ClCompile Include="DiceMaterial.cpp" />
     <ClCompile Include="MainApp.cpp" />
-    <ClCompile Include="QuadColorScene.cpp" />
+    <ClCompile Include="ModelExporter.cpp" />
+    <ClCompile Include="ModelLoadScene.cpp" />
+    <ClCompile Include="ModelMaterial.cpp" />
+    <ClCompile Include="QuadTexMaterial.cpp" />
+    <ClCompile Include="TestScene.cpp" />
     <!-- imgui core -->
     <ClCompile Include="Inc\Imgui\imgui.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>

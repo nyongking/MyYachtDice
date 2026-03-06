@@ -1,7 +1,7 @@
 #pragma once
 #include "Scene.h"
 
-class QuadColorScene : public GameEngine::Scene
+class TestScene : public GameEngine::Scene
 {
 public:
 	void Awake() override;

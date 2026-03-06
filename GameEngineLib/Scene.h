@@ -18,7 +18,7 @@ namespace GameEngine
 		GameObject* CreateGameObject(const std::string& name = "GameObject");
 		void        DestroyGameObject(GameObject* go);
 
-	private:
+	protected:
 		void FlushPendingDestroy();
 
 		std::vector<std::unique_ptr<GameObject>> m_gameObjects;

@@ -34,8 +34,26 @@
     <ClCompile Include="Inc\Imgui\imgui_widgets.cpp">
       <Filter>99.imgui</Filter>
     </ClCompile>
-    <ClCompile Include="QuadColorScene.cpp">
+    <ClCompile Include="TestScene.cpp">
       <Filter>01.Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorMaterial.cpp">
+      <Filter>11.Material</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTexMaterial.cpp">
+      <Filter>11.Material</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoadScene.cpp">
+      <Filter>01.Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelMaterial.cpp">
+      <Filter>11.Material</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelExporter.cpp">
+      <Filter>98.Util</Filter>
+    </ClCompile>
+    <ClCompile Include="DiceMaterial.cpp">
+      <Filter>11.Material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,8 +72,26 @@
     <ClInclude Include="ClientPch.h">
       <Filter>999.Default</Filter>
     </ClInclude>
-    <ClInclude Include="QuadColorScene.h">
+    <ClInclude Include="TestScene.h">
       <Filter>01.Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorMaterial.h">
+      <Filter>11.Material</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTexMaterial.h">
+      <Filter>11.Material</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoadScene.h">
+      <Filter>01.Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelMaterial.h">
+      <Filter>11.Material</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelExporter.h">
+      <Filter>98.Util</Filter>
+    </ClInclude>
+    <ClInclude Include="DiceMaterial.h">
+      <Filter>11.Material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +117,12 @@
     </Filter>
     <Filter Include="01.Scene">
       <UniqueIdentifier>{495dd666-3da2-4fcb-ad02-391d76e3f8c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="11.Material">
+      <UniqueIdentifier>{7c57dd26-71dd-44b3-83b4-b006881c32e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="98.Util">
+      <UniqueIdentifier>{70f80c77-ab05-44ea-bd7f-f46d54e21e63}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

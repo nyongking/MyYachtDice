@@ -5,28 +5,36 @@ namespace Render
 	class ConstantBufferParameter
 	{
 	public:
-		ConstantBufferParameter(void* pData, std::shared_ptr<class ConstantBuffer>&& buffer)
-			: m_pData(pData)
+		ConstantBufferParameter(std::string name, uint32_t dataSize, void* pData, std::shared_ptr<class ConstantBuffer> buffer)
+			: m_name(std::move(name))
+			, m_dataSize(dataSize)
+			, m_pData(pData)
 			, m_buffer(std::move(buffer))
 		{
-
 		}
 
 		ConstantBufferParameter(const ConstantBufferParameter& rhs)
-			: m_buffer(rhs.m_buffer)
+			: m_name(rhs.m_name)
+			, m_dataSize(rhs.m_dataSize)
+			, m_buffer(rhs.m_buffer)
+			, m_pData(nullptr)
 		{
-
 		}
 
 	public:
-		ConstantBuffer* Buffer() { return m_buffer.get(); }
+		class ConstantBuffer*	Buffer()       { return m_buffer.get(); }
+		const std::string&		Name()   const { return m_name; }
+		uint32_t				DataSize() const { return m_dataSize; }
+
+		bool ChangeAddress(void* pData, uint32_t size);
+		bool WriteValue(const void* src, uint32_t size);
 
 		void Update(ID3D11DeviceContext* ctx);
-		bool Release();
-
 
 	private:
-		void* 												m_pData = nullptr;
-		std::shared_ptr<class ConstantBuffer>				m_buffer;
+		std::string						m_name;
+		uint32_t						m_dataSize = 0;
+		void*							m_pData    = nullptr;
+		std::shared_ptr<class ConstantBuffer>	m_buffer;
 	};
 }

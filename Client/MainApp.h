@@ -12,7 +12,6 @@ public:
 	void Loop();
 
 private:
-	uint32_t          m_camID = 0;
 	GameEngine::Timer m_timer;
 
 #ifdef _DEBUG

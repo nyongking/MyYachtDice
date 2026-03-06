@@ -151,8 +151,12 @@ call UpdateLib.bat
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="EngineGlobal.h" />
-    <ClInclude Include="EngineStruct.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelComponent.h" />
+    <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="GameEnginePch.h" />
     <ClInclude Include="GeometryManager.h" />
     <ClInclude Include="MaterialManager.h" />
@@ -169,8 +173,12 @@ call UpdateLib.bat
     <ClInclude Include="RenderComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="EngineGlobal.cpp" />
-    <ClCompile Include="EngineStruct.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelComponent.cpp" />
+    <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="GameEnginePch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

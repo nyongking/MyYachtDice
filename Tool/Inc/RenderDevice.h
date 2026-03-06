@@ -15,8 +15,6 @@ namespace Render
 #pragma endregion Singleton
 
 		friend class Renderer;
-		friend class RenderResourceManager;
-		friend class ConstantBufferManager;
 
 	public:
 		RenderDevice();

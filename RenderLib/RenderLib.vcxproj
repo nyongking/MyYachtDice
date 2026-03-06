@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DefaultColorMaterial.h" />
+    <ClInclude Include="BufferStruct.h" />
     <ClInclude Include="ConstantBuffer.h" />
-    <ClInclude Include="ConstantBufferManager.h" />
+    <ClInclude Include="LightItem.h" />
     <ClInclude Include="MaterialParameter.h" />
     <ClInclude Include="MaterialSlot.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureSlot.h" />
     <ClInclude Include="PixelShader.h" />
     <ClInclude Include="RefCountBlock.h" />
     <ClInclude Include="RenderPass.h" />
@@ -40,15 +42,15 @@
     <ClInclude Include="RenderTypes.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="VertexShader.h" />
-    <ClInclude Include="ViewProjManager.h" />
     <ClInclude Include="ViewProjMatrix.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DefaultColorMaterial.cpp" />
+    <ClCompile Include="BufferStruct.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
-    <ClCompile Include="ConstantBufferManager.cpp" />
     <ClCompile Include="MaterialParameter.cpp" />
     <ClCompile Include="MaterialSlot.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureSlot.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="RefCountBlock.cpp" />
     <ClCompile Include="RenderPass.cpp" />
@@ -67,7 +69,6 @@
     <ClCompile Include="RenderPipeline.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="VertexShader.cpp" />
-    <ClCompile Include="ViewProjManager.cpp" />
     <ClCompile Include="ViewProjMatrix.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

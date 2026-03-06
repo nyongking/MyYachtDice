@@ -11,7 +11,4 @@ namespace GameEngine
 		SetGeometry(quad);
 	}
 
-	void QuadComponent::Update(float dt)
-	{
-	}
 }

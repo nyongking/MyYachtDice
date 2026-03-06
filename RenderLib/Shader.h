@@ -56,6 +56,7 @@ namespace Render
 		virtual bool CreateFromShaderBlob(ID3D11Device* pDevice) abstract;
 
 		int			 ConstantBufferSlot(const std::string& name, uint32_t size);
+		int			 TextureSlot(const std::string& name) const;
 		
 	protected:
 		bool			 m_isCreated = false;

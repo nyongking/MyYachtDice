@@ -19,6 +19,7 @@ namespace GameEngine
 		if (!m_pendingScene)
 			return;
 
+		m_mainCamera   = nullptr;
 		m_currentScene = std::move(m_pendingScene);
 		m_currentScene->Awake();
 		m_currentScene->Start();

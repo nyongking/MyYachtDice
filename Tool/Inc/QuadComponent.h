@@ -8,9 +8,6 @@ namespace GameEngine
 	{
 	public:
 		void Awake() override;
-		void Update(float dt) override;
-
-		Render::Material* GetMaterial() const { return m_material.get(); }
 	};
 
 

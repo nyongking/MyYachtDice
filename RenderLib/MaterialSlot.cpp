@@ -37,7 +37,7 @@ namespace Render
 		if (m_slotPS >= 0)
 			m_pBuffer->BindPS(pContext, static_cast<uint32_t>(m_slotPS));
 
-		return false;
+		return true;
 	}
 }
 

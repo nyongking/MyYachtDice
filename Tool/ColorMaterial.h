@@ -1,0 +1,27 @@
+#pragma once
+#include "Material.h"
+
+namespace Render { class Material; class ShaderGroup; }
+
+class ColorMaterial : public Render::Material
+{
+public:
+	ColorMaterial() = default;
+	~ColorMaterial() = default;
+
+public:
+	virtual bool Initialize(Render::ShaderGroup* pShaderGroup, ID3D11Device* device) override;
+	virtual std::unique_ptr<Render::Material> Clone() const override;
+
+	void SetViewProj(const float4x4& vp) override { m_viewProj = vp; }
+	void SetWorld(const float4x4& w)     override { m_world = w; }
+	void SetColor(const float4& c) { m_color = c; }
+
+private:
+	float4x4 m_viewProj = {};  // VS b0  (cbuffer "PerFrame")
+	float4x4 m_world = {};  // VS b1  (cbuffer "PerObject")
+	float4   m_color = {};  // PS b0  (cbuffer "ColorBuffer")
+
+
+};
+

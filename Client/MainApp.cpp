@@ -10,7 +10,6 @@
 #include "Renderer.h"
 #include "RenderDevice.h"
 #include "RenderPipeline.h"
-#include "ViewProjManager.h"
 #include "SceneManager.h"
 #include "QuadColorScene.h"
 
@@ -46,20 +45,7 @@ bool MainApp::Init()
 
 	InitGame();
 
-	// 카메라 설정
-	m_camID = Render::ViewProjManager::GetInstance().CreateViewProj();
-
-	using namespace DirectX;
-	XMMATRIX view = XMMatrixLookAtLH(
-		XMVectorSet(0.f, 0.f, -5.f, 1.f),
-		XMVectorSet(0.f, 0.f,  0.f, 1.f),
-		XMVectorSet(0.f, 1.f,  0.f, 0.f));
-	XMMATRIX proj = XMMatrixPerspectiveFovLH(XM_PIDIV4, 16.f / 9.f, 0.1f, 1000.f);
-
-	Render::ViewProjManager::GetInstance().UpdateViewProjByID(m_camID, view, proj);
-	Render::ViewProjManager::GetInstance().ChangeCurrent(m_camID);
-
-	GameEngine::SceneManager::GetInstance().LoadScene<QuadColorScene>();
+	GameEngine::SceneManager::GetInstance().LoadScene<TestScene>();
 
 	timeBeginPeriod(1);
 	m_timer.Reset();

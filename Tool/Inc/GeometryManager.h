@@ -1,6 +1,7 @@
 #pragma once
 #include "ResourceCache.h"
 #include "Geometry.h"
+#include "EngineGlobal.h"
 
 namespace GameEngine
 {
@@ -8,12 +9,7 @@ namespace GameEngine
     {
 #pragma region Singleton
     public:
-        static std::shared_ptr<GeometryManager>& GetInstance()
-        {
-            static std::shared_ptr<GeometryManager> instance(new GeometryManager());
-            return instance;
-        }
-    private:
+        static GeometryManager* GetInstance() { return GGeometryManager; }
         GeometryManager() = default;
         GeometryManager(const GeometryManager&) = delete;
         GeometryManager& operator=(const GeometryManager&) = delete;

@@ -4,34 +4,42 @@
 
 namespace GameEngine
 {
-    bool MaterialManager::Initialize()
+    constexpr int MAX_WAIT_MS = 10000;
+
+    bool MaterialManager::Initialize(RefCom<ID3D11Device> device)
     {
+        if (!device.Get())
+            return false;
+
+        m_device = device;
         return true;
     }
 
-    Render::Material* MaterialManager::LoadSync(const std::string& key,
-                                                std::unique_ptr<Render::Material> mat,
-                                                const std::string& shaderKey)
+    std::unique_ptr<Render::Material> MaterialManager::LoadSync(const std::string& key,
+                                                               std::unique_ptr<Render::Material> mat,
+                                                               const std::string& shaderKey)
     {
         // 1. Shader 상태 폴링 — 락 밖에서 처리
         auto& shaderMgr = *ShaderManager::GetInstance();
-        constexpr int MAX_WAIT_MS = 5000;
         int elapsed = 0;
 
         while (true)
         {
             ResourceState shaderState = shaderMgr.GetState(shaderKey);
+
             if (shaderState == ResourceState::Ready)
                 break;
             if (shaderState == ResourceState::Failed || shaderState == ResourceState::NotLoaded)
                 return nullptr;
-            Sleep(1);
-            if (++elapsed >= MAX_WAIT_MS)
+
+            Sleep(10);
+            elapsed += 10;
+            if (elapsed >= MAX_WAIT_MS)
                 return nullptr;
         }
 
         Render::ShaderGroup* sg = shaderMgr.Get(shaderKey);
-        if (!sg)
+        if (!sg || !m_device)
             return nullptr;
 
         // 2. 캐시 히트 확인 + 등록 + Initialize
@@ -41,16 +49,16 @@ namespace GameEngine
 
         auto it = m_cache.find(key);
         if (it != m_cache.end() && it->second.state == ResourceState::Ready)
-            return it->second.resource.get();
+            return it->second.resource->Clone();
 
         auto& entry    = m_cache[key];
         entry.resource = std::move(mat);
         entry.state    = ResourceState::Loading;
 
-        if (rawPtr->Initialize(sg))
+        if (rawPtr->Initialize(sg, m_device.Get()))
         {
             entry.state = ResourceState::Ready;
-            return rawPtr;
+            return rawPtr->Clone();
         }
 
         entry.state = ResourceState::Failed;
@@ -60,7 +68,7 @@ namespace GameEngine
     void MaterialManager::LoadAsync(const std::string& key,
                                     std::unique_ptr<Render::Material> mat,
                                     const std::string& shaderKey,
-                                    std::function<void(Render::Material*)> onComplete)
+                                    std::function<void(std::unique_ptr<Render::Material>)> onComplete)
     {
         Render::Material* rawPtr = mat.get();
 
@@ -71,7 +79,7 @@ namespace GameEngine
             auto it = m_cache.find(key);
             if (it != m_cache.end() && it->second.state == ResourceState::Ready)
             {
-                if (onComplete) onComplete(it->second.resource.get());
+                if (onComplete) onComplete(it->second.resource->Clone());
                 return;
             }
 
@@ -84,7 +92,7 @@ namespace GameEngine
         DoAsync(true, [this, key, shaderKey, rawPtr, onComplete]()
         {
             auto& shaderMgr = *ShaderManager::GetInstance();
-            constexpr int MAX_WAIT_MS = 5000;
+
             int elapsed = 0;
 
             while (true)
@@ -92,21 +100,23 @@ namespace GameEngine
                 ResourceState shaderState = shaderMgr.GetState(shaderKey);
                 if (shaderState != ResourceState::Loading)
                     break;
-                Sleep(1);
-                if (++elapsed >= MAX_WAIT_MS)
+
+                Sleep(10);
+                elapsed += 10;
+                if (elapsed >= MAX_WAIT_MS)
                     break;
             }
 
-            Render::ShaderGroup* sg  = shaderMgr.Get(shaderKey);
-            Render::Material*  result = nullptr;
+            Render::ShaderGroup* sg = shaderMgr.Get(shaderKey);
+            std::unique_ptr<Render::Material> result = nullptr;
 
             {
                 WriteLockGuard lock(m_cacheLock, typeid(this).name());
                 auto& entry = m_cache[key];
-                if (sg && rawPtr->Initialize(sg))
+                if (sg && m_device && rawPtr->Initialize(sg, m_device.Get()))
                 {
                     entry.state = ResourceState::Ready;
-                    result = rawPtr;
+                    result = rawPtr->Clone();
                 }
                 else
                 {
@@ -114,7 +124,7 @@ namespace GameEngine
                 }
             }
 
-            if (onComplete) onComplete(result);
+            if (onComplete) onComplete(std::move(result));
         });
     }
 

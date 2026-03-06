@@ -90,4 +90,14 @@ namespace Render
 
         return -1;
     }
+
+    int Shader::TextureSlot(const std::string& name) const
+    {
+        for (auto& res : m_resources[TEXTURE])
+        {
+            if (res.name == name)
+                return static_cast<int>(res.slot);
+        }
+        return -1;
+    }
 }

@@ -19,6 +19,9 @@ namespace Render
 		int VSConstantBufferSlot(const std::string& name, uint32_t size) const;
 		int PSConstantBufferSlot(const std::string& name, uint32_t size) const;
 
+		int VSTextureSlot(const std::string& name) const;
+		int PSTextureSlot(const std::string& name) const;
+
 	private:
 		RefCom<ID3D11InputLayout> m_inputLayout;
 		class VertexShader*       m_vertexShader = nullptr;

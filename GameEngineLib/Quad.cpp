@@ -1,8 +1,9 @@
 #include "GameEnginePch.h"
 #include "Quad.h"
-#include "EngineStruct.h"
+#include "BufferStruct.h"
 
 using namespace DirectX;
+using namespace Render;
 
 bool GameEngine::Quad::DefaultCreateBuffers(ID3D11Device* pDevice)
 {

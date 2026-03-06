@@ -46,14 +46,8 @@
     <ClInclude Include="ViewProjMatrix.h">
       <Filter>06.ViewProj</Filter>
     </ClInclude>
-    <ClInclude Include="ViewProjManager.h">
-      <Filter>06.ViewProj</Filter>
-    </ClInclude>
     <ClInclude Include="ConstantBuffer.h">
       <Filter>05.Buffers\ConstantBuffer</Filter>
-    </ClInclude>
-    <ClInclude Include="ConstantBufferManager.h">
-      <Filter>05.Buffers\ConstantBuffer\ConstBufferManager</Filter>
     </ClInclude>
     <ClInclude Include="MaterialParameter.h">
       <Filter>04.RenderResource\02.Material</Filter>
@@ -64,11 +58,20 @@
     <ClInclude Include="MaterialSlot.h">
       <Filter>04.RenderResource\02.Material</Filter>
     </ClInclude>
-    <ClInclude Include="DefaultColorMaterial.h">
-      <Filter>04.RenderResource\02.Material\Color</Filter>
-    </ClInclude>
     <ClInclude Include="RenderGlobal.h">
       <Filter>99.Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>04.RenderResource\04.Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureSlot.h">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferStruct.h">
+      <Filter>06.Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="LightItem.h">
+      <Filter>04.RenderResource\05.Light</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -114,14 +117,8 @@
     <ClCompile Include="ViewProjMatrix.cpp">
       <Filter>06.ViewProj</Filter>
     </ClCompile>
-    <ClCompile Include="ViewProjManager.cpp">
-      <Filter>06.ViewProj</Filter>
-    </ClCompile>
     <ClCompile Include="ConstantBuffer.cpp">
       <Filter>05.Buffers\ConstantBuffer</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstantBufferManager.cpp">
-      <Filter>05.Buffers\ConstantBuffer\ConstBufferManager</Filter>
     </ClCompile>
     <ClCompile Include="MaterialParameter.cpp">
       <Filter>04.RenderResource\02.Material</Filter>
@@ -132,11 +129,17 @@
     <ClCompile Include="MaterialSlot.cpp">
       <Filter>04.RenderResource\02.Material</Filter>
     </ClCompile>
-    <ClCompile Include="DefaultColorMaterial.cpp">
-      <Filter>04.RenderResource\02.Material\Color</Filter>
-    </ClCompile>
     <ClCompile Include="RenderGlobal.cpp">
       <Filter>99.Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>04.RenderResource\04.Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureSlot.cpp">
+      <Filter>04.RenderResource\02.Material</Filter>
+    </ClCompile>
+    <ClCompile Include="BufferStruct.cpp">
+      <Filter>06.Struct</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -176,23 +179,26 @@
     <Filter Include="06.ViewProj">
       <UniqueIdentifier>{21d6a0ae-7a77-47e8-8f22-18f2d12dc1a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="04.RenderResource\02.Material\Color">
-      <UniqueIdentifier>{41b480cd-7e2d-41f4-bdc6-69e37902a933}</UniqueIdentifier>
-    </Filter>
     <Filter Include="05.Buffers">
       <UniqueIdentifier>{4af4ee17-bf72-4f90-b965-4617f47ee5cf}</UniqueIdentifier>
     </Filter>
     <Filter Include="05.Buffers\ConstantBuffer">
       <UniqueIdentifier>{45f9e4a0-5faa-4194-a043-ea48a672fbe3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="05.Buffers\ConstantBuffer\ConstBufferManager">
-      <UniqueIdentifier>{0b163a59-96c4-4f04-a24b-728ae4632203}</UniqueIdentifier>
-    </Filter>
     <Filter Include="99.Util">
       <UniqueIdentifier>{af7e17b6-95f8-4a5b-885d-488fbc1a13aa}</UniqueIdentifier>
     </Filter>
     <Filter Include="99.Global">
       <UniqueIdentifier>{95cce5ec-aefd-486d-bcd9-9dcfdf34f22e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\04.Texture">
+      <UniqueIdentifier>{08e6ffab-f41b-4e2f-bdd7-734461821598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="06.Struct">
+      <UniqueIdentifier>{77574278-af7b-402f-941f-7188128b11ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.RenderResource\05.Light">
+      <UniqueIdentifier>{34f5fed0-a9c6-4a32-af93-31e274df443e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

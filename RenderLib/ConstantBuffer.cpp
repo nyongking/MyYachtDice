@@ -1,14 +1,9 @@
 #include "RenderPch.h"
 #include "ConstantBuffer.h"
 
-#include "ConstantBufferManager.h"
-
 namespace Render
 {
-	ConstantBuffer::ConstantBuffer(uint64_t id)
-		: m_id(id)
-	{
-	}
+
 
 	bool ConstantBuffer::Create(ID3D11Device* device, uint32_t byteWidth, const void* pInitialData, D3D11_USAGE usage)
 	{
@@ -49,16 +44,6 @@ namespace Render
 		m_usage = usage;
 
 		return true;
-	}
-
-	bool ConstantBuffer::Release()
-	{
-		if (0 != m_id)
-		{
-			return ConstantBufferManager::GetInstance().ReleaseBuffer(m_id);
-		}
-		
-		return false;
 	}
 
 	bool ConstantBuffer::Update(ID3D11DeviceContext* context, const void* data, uint32_t byteWidth, uint32_t offset)

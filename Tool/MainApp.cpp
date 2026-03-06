@@ -15,9 +15,10 @@
 #include "Renderer.h"
 #include "RenderDevice.h"
 #include "RenderPipeline.h"
-#include "ViewProjManager.h"
 #include "SceneManager.h"
-#include "QuadColorScene.h"
+#include "CameraComponent.h"
+
+#include "ModelLoadScene.h"
 
 void MainApp::ImGuiInit()
 {
@@ -63,96 +64,6 @@ void MainApp::ImGuiEndFrame()
 	}
 }
 
-void MainApp::BuildToolUI()
-{
-	// ── 타깃 지연 초기화 ──────────────────────────────────────
-	if (!m_editTarget)
-	{
-		auto* scene = dynamic_cast<QuadColorScene*>(
-			GameEngine::SceneManager::GetInstance().GetCurrentScene());
-		if (scene)
-			m_editTarget = scene->GetEditTarget();
-	}
-
-	// ── Object Properties 창 ──────────────────────────────────
-	ImGui::Begin("Object Properties");
-
-	if (m_editTarget)
-	{
-		auto* tr = m_editTarget->GetTransform();
-
-		// Operation 선택
-		if (ImGui::RadioButton("Translate", m_gizmoOp == ImGuizmo::TRANSLATE))
-			m_gizmoOp = ImGuizmo::TRANSLATE;
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Rotate",    m_gizmoOp == ImGuizmo::ROTATE))
-			m_gizmoOp = ImGuizmo::ROTATE;
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Scale",     m_gizmoOp == ImGuizmo::SCALE))
-			m_gizmoOp = ImGuizmo::SCALE;
-
-		// Mode 선택 (Scale은 항상 LOCAL)
-		if (m_gizmoOp != ImGuizmo::SCALE)
-		{
-			if (ImGui::RadioButton("World", m_gizmoMode == ImGuizmo::WORLD))
-				m_gizmoMode = ImGuizmo::WORLD;
-			ImGui::SameLine();
-			if (ImGui::RadioButton("Local", m_gizmoMode == ImGuizmo::LOCAL))
-				m_gizmoMode = ImGuizmo::LOCAL;
-		}
-
-		ImGui::Separator();
-
-		// T/R/S 직접 편집
-		float pos[3] = { tr->GetPosition().x, tr->GetPosition().y, tr->GetPosition().z };
-		float rot[3] = { tr->GetRotation().x, tr->GetRotation().y, tr->GetRotation().z };
-		float scl[3] = { tr->GetScale().x,    tr->GetScale().y,    tr->GetScale().z    };
-
-		if (ImGui::DragFloat3("Position", pos, 0.01f))
-			tr->SetPosition({ pos[0], pos[1], pos[2] });
-		if (ImGui::DragFloat3("Rotation", rot, 0.5f))
-			tr->SetRotation({ rot[0], rot[1], rot[2] });
-		if (ImGui::DragFloat3("Scale",    scl, 0.01f))
-			tr->SetScale({ scl[0], scl[1], scl[2] });
-	}
-
-	ImGui::End();
-
-	// ── Gizmo ─────────────────────────────────────────────────
-	if (!m_editTarget)
-		return;
-
-	ImGuiViewport* vp = ImGui::GetMainViewport();
-	ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList(vp));
-	ImGuizmo::SetRect(vp->Pos.x, vp->Pos.y, vp->Size.x, vp->Size.y);
-
-	auto& vpm   = Render::ViewProjManager::GetInstance();
-	const auto* pView = vpm.GetCurrentView();
-	const auto* pProj = vpm.GetCurrentProj();
-	if (!pView || !pProj)
-		return;
-
-	auto* tr = m_editTarget->GetTransform();
-	float4x4 worldMat = tr->GetWorldMatrix();
-
-	ImGuizmo::MODE mode = (m_gizmoOp == ImGuizmo::SCALE)
-	                      ? ImGuizmo::LOCAL : m_gizmoMode;
-
-	if (ImGuizmo::Manipulate(
-	        reinterpret_cast<const float*>(pView),
-	        reinterpret_cast<const float*>(pProj),
-	        m_gizmoOp, mode,
-	        reinterpret_cast<float*>(&worldMat)))
-	{
-		float t[3], r[3], s[3];
-		ImGuizmo::DecomposeMatrixToComponents(
-		    reinterpret_cast<float*>(&worldMat), t, r, s);
-
-		tr->SetPosition({ t[0], t[1], t[2] });
-		tr->SetRotation({ r[0], r[1], r[2] });
-		tr->SetScale   ({ s[0], s[1], s[2] });
-	}
-}
 
 MainApp::MainApp()
 {
@@ -186,20 +97,7 @@ bool MainApp::Init()
 
 	InitGame();
 
-	// 카메라 설정
-	m_camID = Render::ViewProjManager::GetInstance().CreateViewProj();
-
-	using namespace DirectX;
-	XMMATRIX view = XMMatrixLookAtLH(
-		XMVectorSet(0.f, 0.f, -5.f, 1.f),
-		XMVectorSet(0.f, 0.f,  0.f, 1.f),
-		XMVectorSet(0.f, 1.f,  0.f, 0.f));
-	XMMATRIX proj = XMMatrixPerspectiveFovLH(XM_PIDIV4, 16.f / 9.f, 0.1f, 1000.f);
-
-	Render::ViewProjManager::GetInstance().UpdateViewProjByID(m_camID, view, proj);
-	Render::ViewProjManager::GetInstance().ChangeCurrent(m_camID);
-
-	GameEngine::SceneManager::GetInstance().LoadScene<QuadColorScene>();
+	GameEngine::SceneManager::GetInstance().LoadScene<ModelLoadScene>();
 
 	ImGuiInit();
 
@@ -227,8 +125,6 @@ void MainApp::Loop()
 
 	// ── Game Update + Submit ──
 	GameEngine::SceneManager::GetInstance().Update(dt);
-
-	BuildToolUI();                                                // ③ ImGui UI 빌드
 
 	// ── Render ──
 	Render::Renderer::GetInstance().RenderBegin();
