@@ -7,5 +7,7 @@ namespace Render
 	{
 		class Geometry* geometry = nullptr;
 		class Material* material = nullptr;
+		float4x4        world    = {};
+		float4x4        viewProj = {};
 	};
 }

@@ -24,8 +24,7 @@ namespace Render
 
 		ShaderGroup* GetShaderGroup() const { return m_shaderGroup; }
 
-		virtual void SetWorld(const float4x4& w)     {}
-		virtual void SetViewProj(const float4x4& vp) {}
+		virtual void SetLights(const struct LightData* lights, int count) {}
 
 		template<typename T>
 		bool SetParam(const std::string& name, const T& value)

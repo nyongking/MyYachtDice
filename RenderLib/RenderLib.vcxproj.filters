@@ -16,9 +16,6 @@
     <ClInclude Include="RenderPipeline.h">
       <Filter>02.RenderPipeline</Filter>
     </ClInclude>
-    <ClInclude Include="RenderPass.h">
-      <Filter>02.RenderPipeline</Filter>
-    </ClInclude>
     <ClInclude Include="RenderTargetGroup.h">
       <Filter>02.RenderPipeline</Filter>
     </ClInclude>
@@ -73,6 +70,15 @@
     <ClInclude Include="LightItem.h">
       <Filter>04.RenderResource\05.Light</Filter>
     </ClInclude>
+    <ClInclude Include="GeometryPass.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPassBase.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="LightingPass.h">
+      <Filter>02.RenderPipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderPch.cpp">
@@ -85,9 +91,6 @@
       <Filter>01.Renderer</Filter>
     </ClCompile>
     <ClCompile Include="RenderPipeline.cpp">
-      <Filter>02.RenderPipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderPass.cpp">
       <Filter>02.RenderPipeline</Filter>
     </ClCompile>
     <ClCompile Include="RenderTargetGroup.cpp">
@@ -140,6 +143,12 @@
     </ClCompile>
     <ClCompile Include="BufferStruct.cpp">
       <Filter>06.Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryPass.cpp">
+      <Filter>02.RenderPipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="LightingPass.cpp">
+      <Filter>02.RenderPipeline</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

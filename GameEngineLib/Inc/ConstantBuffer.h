@@ -9,7 +9,6 @@ namespace Render
 		~ConstantBuffer() = default;
 
 		bool Create(ID3D11Device* device, uint32_t byteWidth, const void* pInitialData, D3D11_USAGE usage = D3D11_USAGE_DYNAMIC);
-		bool Release();
 
 		bool Update(ID3D11DeviceContext* context, const void* data, uint32_t byteWidth, uint32_t offset = 0);
 

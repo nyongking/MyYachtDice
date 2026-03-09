@@ -210,4 +210,10 @@ namespace Render
 		m_swapchain->Present(0, 0);
 	}
 
+	void Renderer::BindBackbuffer(ID3D11DeviceContext* ctx)
+	{
+		ID3D11RenderTargetView* rtvs[] = { m_backbufferRTV.Get() };
+		ctx->OMSetRenderTargets(1, rtvs, m_depthstencilView.Get());
+	}
+
 }

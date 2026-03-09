@@ -1,0 +1,67 @@
+{
+    "gameObjects": [
+        {
+            "name": "MainCamera",
+            "active": true,
+            "transform": {
+                "position": [ 0.0, 5.0, -10.0 ],
+                "rotation": [ 15.0, 0.0, 0.0 ],
+                "scale":    [ 1.0, 1.0, 1.0 ]
+            },
+            "components": [
+                {
+                    "type": "CameraComponent",
+                    "isMainCamera": true,
+                    "isPerspective": true,
+                    "fovYDeg": 60.0,
+                    "aspect":  1.7777778,
+                    "nearZ":   0.1,
+                    "farZ":    1000.0
+                }
+            ]
+        },
+        {
+            "name": "DirectionalLight",
+            "active": true,
+            "transform": {
+                "position": [ 0.0, 0.0, 0.0 ],
+                "rotation": [ 0.0, 0.0, 0.0 ],
+                "scale":    [ 1.0, 1.0, 1.0 ]
+            },
+            "components": [
+                {
+                    "type":      "LightComponent",
+                    "lightType": "Directional",
+                    "color":     [ 1.0, 1.0, 1.0 ],
+                    "direction": [ 0.5, -1.0, 0.5 ],
+                    "position":  [ 0.0,  0.0, 0.0 ],
+                    "intensity": 1.0,
+                    "range":     0.0,
+                    "spotInner": 0.0,
+                    "spotOuter": 0.0
+                }
+            ]
+        },
+        {
+            "name": "Dice",
+            "active": true,
+            "transform": {
+                "position": [ 0.0, 0.0, 0.0 ],
+                "rotation": [ 0.0, 0.0, 0.0 ],
+                "scale":    [ 50.0, 50.0, 50.0 ]
+            },
+            "components": [
+                {
+                    "type":      "ModelComponent",
+                    "modelKey":  "Dice",
+                    "modelPath": "Bin/Resource/Model/Cube.mymesh",
+                    "layer":     "Opaque",
+                    "sections": [
+                        { "albedoColor": [ 1.0, 1.0, 1.0, 1.0 ] },
+                        { "albedoColor": [ 0.667, 0.078, 0.0, 1.0 ] }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 #include "GameEnginePch.h"
 #include "Model.h"
 #include "MaterialManager.h"
+#include "GBufferMaterial.h"
 
 #include <fstream>
 
@@ -50,8 +51,16 @@ namespace GameEngine
 			m_sections[i].vertexCount = secHeader.vertexCount;
 			m_sections[i].indexCount  = secHeader.indexCount;
 
-			// MaterialManager에서 클론 가져오기
+			// MaterialManager에서 클론 가져오기; 미등록이면 GBufferMaterial 자동 등록
 			m_materials[i] = MaterialManager::GetInstance()->Get(secHeader.matKey);
+			if (!m_materials[i])
+			{
+				MaterialManager::GetInstance()->LoadSync(
+					secHeader.matKey,
+					std::make_unique<Render::GBufferMaterial>(),
+					"GBuffer");
+				m_materials[i] = MaterialManager::GetInstance()->Get(secHeader.matKey);
+			}
 			m_sections[i].material = m_materials[i].get();
 		}
 

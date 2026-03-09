@@ -18,6 +18,7 @@
 #include "SceneManager.h"
 #include "CameraComponent.h"
 
+#include "TestScene.h"
 #include "ModelLoadScene.h"
 
 void MainApp::ImGuiInit()
@@ -97,7 +98,7 @@ bool MainApp::Init()
 
 	InitGame();
 
-	GameEngine::SceneManager::GetInstance().LoadScene<ModelLoadScene>();
+	GameEngine::SceneManager::GetInstance().LoadScene<TestScene>();
 
 	ImGuiInit();
 

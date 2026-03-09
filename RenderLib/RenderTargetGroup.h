@@ -12,7 +12,8 @@ namespace Render
 
 		void Bind(ID3D11DeviceContext* ctx);
 		void Clear(ID3D11DeviceContext* ctx, const float4& color);
-		ID3D11ShaderResourceView* GetSRV(uint32_t index);
+		ID3D11ShaderResourceView*  GetSRV(uint32_t index);
+		ID3D11DepthStencilView*    GetDSV() { return m_dsv.Get(); }
 
 	private:
 		struct Target

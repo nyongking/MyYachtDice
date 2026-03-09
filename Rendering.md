@@ -170,7 +170,7 @@ private:
 
 ---
 
-## 필요한 추가 리소스
+## 관련 리소스
 
 | 항목 | 내용 |
 |------|------|
@@ -181,3 +181,4 @@ private:
 | `GBufferMaterial` | VTXPOSNORMTANUV 기반, Albedo/Normal Map 슬롯 포함 |
 | `DeferredLightingMaterial` | G-Buffer SRV 3개 + LightData 배열 CB |
 | Fullscreen Quad Geometry | NDC -1~+1 쿼드, VTXPOSTEX 포맷 |
+

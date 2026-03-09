@@ -97,7 +97,11 @@ namespace Render
 			inputElementDescs.push_back(elementDesc);
 		}
 
-		if (FAILED(device->CreateInputLayout(
+		// 입력 파라미터가 없는 VS (SV_VertexID 전용, fullscreen 등)는 InputLayout 불필요
+	if (inputElementDescs.empty())
+		return true;
+
+	if (FAILED(device->CreateInputLayout(
 			inputElementDescs.data(),
 			static_cast<UINT>(inputElementDescs.size()),
 			blob->GetBufferPointer(),

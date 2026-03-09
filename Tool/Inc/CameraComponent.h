@@ -29,6 +29,53 @@ namespace GameEngine
 		const float4x4* GetProj()        const { return m_matrix.GetProj(); }
 		const float4x4* GetInverseView() const { return m_matrix.GetInverseView(); }
 
+		// 직렬화
+		std::string GetTypeName()            const override { return "CameraComponent"; }
+		MyJson      Serialize()              const override;
+		void        Deserialize(const MyJson& j)   override;
+
+#ifdef TOOL
+		void OnInspectorGUI() override
+		{
+			// Eye / Target
+			if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				bool viewChanged = false;
+				viewChanged |= ImGui::DragFloat3("Eye",    &m_eye.x,    0.01f);
+				viewChanged |= ImGui::DragFloat3("Target", &m_target.x, 0.01f);
+				if (viewChanged)
+					SetLookAt(
+						DirectX::XMVectorSet(m_eye.x,    m_eye.y,    m_eye.z,    1.f),
+						DirectX::XMVectorSet(m_target.x, m_target.y, m_target.z, 1.f),
+						DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f));
+			}
+
+			// Projection
+			bool changed = false;
+			if (ImGui::Checkbox("Perspective", &m_isPerspective))
+				changed = true;
+
+			if (m_isPerspective)
+			{
+				changed |= ImGui::DragFloat("FOV (deg)", &m_fovYDeg, 0.5f, 1.f, 179.f);
+				changed |= ImGui::DragFloat("Aspect",    &m_aspect,  0.01f, 0.1f, 10.f);
+				changed |= ImGui::DragFloat("Near",      &m_nearZ,   0.001f, 0.001f, 100.f);
+				changed |= ImGui::DragFloat("Far",       &m_farZ,    1.f, 1.f, 100000.f);
+				if (changed)
+					SetPerspective(m_fovYDeg * (DirectX::XM_PI / 180.f), m_aspect, m_nearZ, m_farZ);
+			}
+			else
+			{
+				changed |= ImGui::DragFloat("Width",  &m_orthoWidth,  1.f, 0.1f, 10000.f);
+				changed |= ImGui::DragFloat("Height", &m_orthoHeight, 1.f, 0.1f, 10000.f);
+				changed |= ImGui::DragFloat("Near",   &m_nearZ,       0.001f, 0.001f, 100.f);
+				changed |= ImGui::DragFloat("Far",    &m_farZ,        1.f, 1.f, 100000.f);
+				if (changed)
+					SetOrthographic(m_orthoWidth, m_orthoHeight, m_nearZ, m_farZ);
+			}
+		}
+#endif
+
 	private:
 		Render::ViewProjMatrix m_matrix;
 
@@ -37,5 +84,19 @@ namespace GameEngine
 		float3     m_lookAtOffset  = { 0.f,  0.f,   0.f };
 		float      m_smoothSpeed   = 0.f;
 		float3     m_currentEye   = { 0.f,  0.f,   0.f };
+
+		// 카메라 Eye / Target (팔로우 카메라 미사용 시)
+		float3 m_eye    = { 0.f, 5.f, -10.f };
+		float3 m_target = { 0.f, 0.f,   0.f };
+
+		// 직렬화를 위한 투영 파라미터 저장
+		bool  m_isMainCamera  = false;
+		bool  m_isPerspective = true;
+		float m_fovYDeg       = 60.f;
+		float m_aspect        = 16.f / 9.f;
+		float m_nearZ         = 0.1f;
+		float m_farZ          = 1000.f;
+		float m_orthoWidth    = 10.f;
+		float m_orthoHeight   = 10.f;
 	};
 }

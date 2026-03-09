@@ -29,7 +29,7 @@ namespace Render
 			RenderDevice::GetInstance().GetDevice()))
 			return false;*/
 
-		if (false == RenderPipeline::GetInstance().Initialize())
+		if (false == RenderPipeline::GetInstance().Initialize(sizeX, sizeY))
 			return false;
 
 		return true;

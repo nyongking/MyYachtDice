@@ -7,6 +7,11 @@
 #include "MaterialManager.h"
 #include "TextureManager.h"
 #include "ModelManager.h"
+#include "ComponentRegistry.h"
+#include "CameraComponent.h"
+#include "LightComponent.h"
+#include "ModelComponent.h"
+#include "QuadComponent.h"
 
 #include <objbase.h>
 
@@ -60,6 +65,12 @@ namespace GameEngine
 
 		if (!GModelManager->Initialize(device))
 			return false;
+
+		// 내장 컴포넌트 등록 — 씬 역직렬화 시 타입명으로 생성 가능
+		ComponentRegistry::Register<CameraComponent>("CameraComponent");
+		ComponentRegistry::Register<LightComponent> ("LightComponent");
+		ComponentRegistry::Register<ModelComponent> ("ModelComponent");
+		ComponentRegistry::Register<QuadComponent>  ("QuadComponent");
 
 		return true;
 	}

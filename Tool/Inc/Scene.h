@@ -18,6 +18,10 @@ namespace GameEngine
 		GameObject* CreateGameObject(const std::string& name = "GameObject");
 		void        DestroyGameObject(GameObject* go);
 
+		// JSON 씬 파일 저장 / 로드
+		void SaveToFile(const std::string& path) const;
+		void LoadFromFile(const std::string& path);
+
 	protected:
 		void FlushPendingDestroy();
 

@@ -21,6 +21,15 @@ namespace Render
 		{
 		}
 
+		ConstantBufferParameter(ConstantBufferParameter&& rhs) noexcept
+			: m_name(std::move(rhs.m_name))
+			, m_dataSize(rhs.m_dataSize)
+			, m_pData(rhs.m_pData)
+			, m_buffer(std::move(rhs.m_buffer))
+		{
+			rhs.m_pData = nullptr;
+		}
+
 	public:
 		class ConstantBuffer*	Buffer()       { return m_buffer.get(); }
 		const std::string&		Name()   const { return m_name; }

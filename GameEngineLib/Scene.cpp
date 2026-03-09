@@ -1,5 +1,6 @@
 #include "GameEnginePch.h"
 #include "Scene.h"
+#include <fstream>
 
 namespace GameEngine
 {
@@ -29,6 +30,31 @@ namespace GameEngine
 	void Scene::DestroyGameObject(GameObject* go)
 	{
 		m_pendingDestroy.push_back(go);
+	}
+
+	void Scene::SaveToFile(const std::string& path) const
+	{
+		MyJson j;
+		MyJson goArray = MyJson::array();
+		for (const auto& go : m_gameObjects)
+			goArray.push_back(go->Serialize());
+		j["gameObjects"] = goArray;
+
+		std::ofstream file(path);
+		file << j.dump(4);
+	}
+
+	void Scene::LoadFromFile(const std::string& path)
+	{
+		MyJson j;
+		if (!LoadJson(path.c_str(), j)) return;
+		if (!j.contains("gameObjects")) return;
+
+		for (const auto& goJson : j["gameObjects"])
+		{
+			auto* go = CreateGameObject();
+			go->Deserialize(goJson);
+		}
 	}
 
 	void Scene::FlushPendingDestroy()

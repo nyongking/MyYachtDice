@@ -4,5 +4,5 @@
 class QuadComponent : public GameEngine::RenderComponent
 {
 public:
-	explicit QuadComponent(std::shared_ptr<Render::Material> material);
+	explicit QuadComponent(std::unique_ptr<Render::Material> material);
 };

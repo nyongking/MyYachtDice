@@ -2,6 +2,8 @@
 
 namespace Render
 {
+	static constexpr int MAX_LIGHTS = 64;
+
 	enum class LightType : unsigned int
 	{
 		Directional = 0,

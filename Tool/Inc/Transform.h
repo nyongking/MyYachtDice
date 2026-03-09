@@ -17,6 +17,11 @@ namespace GameEngine
 
 		float4x4 GetWorldMatrix() const;
 
+		// 직렬화 (Component 인터페이스 override)
+		std::string GetTypeName()            const override { return "Transform"; }
+		MyJson      Serialize()              const override;
+		void        Deserialize(const MyJson& j)   override;
+
 	private:
 		float3 m_position = { 0.f, 0.f, 0.f };
 		float3 m_rotation = { 0.f, 0.f, 0.f };

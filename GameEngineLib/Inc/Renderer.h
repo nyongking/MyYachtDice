@@ -22,8 +22,11 @@ namespace Render
 		bool Initialize(bool window, UINT sizeX, UINT sizeY, HWND hwnd);
 		bool CreateSamplers();
 
-		void RenderBegin(DirectX::XMFLOAT4 clearColor = DirectX::XMFLOAT4(0.f, 0.f, 1.f, 1.f));		// RTV, DSV Ŭ����
-		void RenderEnd();		// ȭ�� �ٲٱ�
+		void RenderBegin(DirectX::XMFLOAT4 clearColor = DirectX::XMFLOAT4(0.f, 0.f, 1.f, 1.f));
+		void RenderEnd();
+
+		// G-Buffer Pass 이후 백버퍼 RTV 복귀 (클리어 없음)
+		void BindBackbuffer(ID3D11DeviceContext* ctx);
 
 	private:
 		RefCom<ID3D11Device> m_device = nullptr;

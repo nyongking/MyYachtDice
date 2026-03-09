@@ -55,6 +55,9 @@
     <Filter Include="03.Manager\Resource\Model">
       <UniqueIdentifier>{a439ecf5-e0f0-4200-bf48-b79b1c19a1f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Component\LightComponent">
+      <UniqueIdentifier>{d659c63d-b686-4f80-a01f-0898c63ecd11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEnginePch.h">
@@ -105,6 +108,9 @@
     <ClInclude Include="CameraComponent.h">
       <Filter>01.Component\CameraComponent</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentRegistry.h">
+      <Filter>99.Global</Filter>
+    </ClInclude>
     <ClInclude Include="TextureManager.h">
       <Filter>03.Manager\Resource\Texture</Filter>
     </ClInclude>
@@ -116,6 +122,14 @@
     </ClInclude>
     <ClInclude Include="ModelComponent.h">
       <Filter>01.Component\RenderComponent\ModelComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="DeferredLightingMaterial.h" />
+    <ClInclude Include="GBufferMaterial.h" />
+    <ClInclude Include="LightComponent.h">
+      <Filter>01.Component\LightComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorScene.h">
+      <Filter>02.Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +178,9 @@
     <ClCompile Include="CameraComponent.cpp">
       <Filter>01.Component\CameraComponent</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentRegistry.cpp">
+      <Filter>99.Global</Filter>
+    </ClCompile>
     <ClCompile Include="TextureManager.cpp">
       <Filter>03.Manager\Resource\Texture</Filter>
     </ClCompile>
@@ -175,6 +192,11 @@
     </ClCompile>
     <ClCompile Include="ModelComponent.cpp">
       <Filter>01.Component\RenderComponent\ModelComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="DeferredLightingMaterial.cpp" />
+    <ClCompile Include="GBufferMaterial.cpp" />
+    <ClCompile Include="LightComponent.cpp">
+      <Filter>01.Component\LightComponent</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

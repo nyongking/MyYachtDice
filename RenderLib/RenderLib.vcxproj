@@ -21,14 +21,16 @@
   <ItemGroup>
     <ClInclude Include="BufferStruct.h" />
     <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="GeometryPass.h" />
+    <ClInclude Include="LightingPass.h" />
     <ClInclude Include="LightItem.h" />
+    <ClInclude Include="RenderPassBase.h" />
     <ClInclude Include="MaterialParameter.h" />
     <ClInclude Include="MaterialSlot.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureSlot.h" />
     <ClInclude Include="PixelShader.h" />
     <ClInclude Include="RefCountBlock.h" />
-    <ClInclude Include="RenderPass.h" />
     <ClInclude Include="RenderTargetGroup.h" />
     <ClInclude Include="ShaderGroup.h" />
     <ClInclude Include="Geometry.h" />
@@ -47,13 +49,14 @@
   <ItemGroup>
     <ClCompile Include="BufferStruct.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="GeometryPass.cpp" />
+    <ClCompile Include="LightingPass.cpp" />
     <ClCompile Include="MaterialParameter.cpp" />
     <ClCompile Include="MaterialSlot.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureSlot.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="RefCountBlock.cpp" />
-    <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="RenderTargetGroup.cpp" />
     <ClCompile Include="ShaderGroup.cpp" />
     <ClCompile Include="Geometry.cpp" />

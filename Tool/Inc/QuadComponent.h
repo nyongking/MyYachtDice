@@ -8,6 +8,8 @@ namespace GameEngine
 	{
 	public:
 		void Awake() override;
+
+		std::string GetTypeName() const override { return "QuadComponent"; }
 	};
 
 

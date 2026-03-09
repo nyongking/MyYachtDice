@@ -10,4 +10,5 @@ xcopy			/y		..\RenderLib\*.h								.\Inc\
 xcopy			/y/s	..\RenderLib\Lib\Debug\*.*					.\Lib\Debug\
 xcopy			/y/s	..\RenderLib\Lib\Release\*.*				.\Lib\Release\
 
+xcopy			/y/s	..\CoreLib\Inc\*.*							.\Inc\
 xcopy			/y/s	..\RenderLib\Inc\*.*						.\Inc\
