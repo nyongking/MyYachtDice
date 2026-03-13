@@ -2,6 +2,7 @@
 #include "EditorScene.h"
 #include "SceneManager.h"
 #include "CameraComponent.h"
+#include "EngineGlobal.h"
 
 #ifdef TOOL
 
@@ -19,6 +20,11 @@ void EditorScene::Update(float dt)
 void EditorScene::BuildHierarchyPanel()
 {
 	ImGui::Begin("Hierarchy");
+
+#ifdef _DEBUG
+	ImGui::Checkbox("Draw Colliders", &GameEngine::GDebugDrawColliders);
+	ImGui::Separator();
+#endif
 
 	for (auto& go : m_gameObjects)
 	{

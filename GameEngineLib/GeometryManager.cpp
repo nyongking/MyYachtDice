@@ -1,6 +1,7 @@
 #include "GameEnginePch.h"
 #include "GeometryManager.h"
 #include "Quad.h"
+#include "DebugGeometry.h"
 
 namespace GameEngine
 {
@@ -13,6 +14,20 @@ namespace GameEngine
         m_context = context;
 
         LoadSync("Quad", std::make_unique<Quad>());
+
+#ifdef _DEBUG
+        // 와이어프레임 디버그 지오메트리 (초록 = 일반, 빨강 = trigger)
+        float4 green = { 0.f, 1.f, 0.f, 1.f };
+        float4 red   = { 1.f, 0.2f, 0.2f, 1.f };
+
+        LoadSync("WireBox",           std::make_unique<WireBox>(green));
+        LoadSync("WireSphere",        std::make_unique<WireSphere>(green));
+        LoadSync("WirePlane",         std::make_unique<WirePlane>(green));
+        LoadSync("WireBoxTrigger",    std::make_unique<WireBox>(red));
+        LoadSync("WireSphereTrigger", std::make_unique<WireSphere>(red));
+        LoadSync("WirePlaneTrigger",  std::make_unique<WirePlane>(red));
+#endif
+
         return true;
     }
 

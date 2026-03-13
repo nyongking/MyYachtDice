@@ -84,6 +84,27 @@
     <ClInclude Include="ConcurrentJobQueue.h">
       <Filter>Job</Filter>
     </ClInclude>
+    <ClInclude Include="CountdownEvent.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSignal.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="Future.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="ParallelFor.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="SpinWait.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskGraph.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadSafeHashMap.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
     <ClInclude Include="BufferReader.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -148,6 +169,12 @@
     </ClCompile>
     <ClCompile Include="ConcurrentJobQueue.cpp">
       <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="ParallelFor.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskGraph.cpp">
+      <Filter>Thread</Filter>
     </ClCompile>
     <ClCompile Include="BufferReader.cpp">
       <Filter>Utils</Filter>

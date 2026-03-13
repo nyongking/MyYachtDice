@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreLib Phase 2 — 아키텍처 강화 구현 상세</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0f0f1a;
+      --bg-main:    #1a1a2e;
+      --bg-card:    #16213e;
+      --bg-code:    #0d1117;
+      --bg-table:   #1e2240;
+
+      --accent-green:  #00e676;
+      --accent-blue:   #40c4ff;
+      --accent-orange: #ffab40;
+      --accent-purple: #ce93d8;
+      --accent-teal:   #64ffda;
+
+      --text-primary:  #e8eaf6;
+      --text-secondary:#9fa8da;
+      --text-muted:    #546e7a;
+      --text-code:     #80cbc4;
+
+      --border-subtle: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.18);
+
+      --phase1: #00e676;
+      --phase2: #40c4ff;
+      --phase3: #ffab40;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+
+      --font-sans: 'Segoe UI', 'Apple SD Gothic Neo', -apple-system, sans-serif;
+      --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+
+      --shadow-card: 0 4px 24px rgba(0,0,0,0.5);
+      --shadow-glow-green:  0 0 20px rgba(0,230,118,0.15);
+      --shadow-glow-blue:   0 0 20px rgba(64,196,255,0.15);
+      --shadow-glow-orange: 0 0 20px rgba(255,171,64,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a6a; }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .site-header {
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 60px 24px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 30% 50%, rgba(64,196,255,0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 70% 50%, rgba(206,147,216,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(64,196,255,0.12);
+      color: var(--accent-blue);
+      border: 1px solid rgba(64,196,255,0.3);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      margin-bottom: 20px;
+    }
+
+    .site-header h1 {
+      font-size: clamp(22px, 4vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .site-header h1 span.hl {
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .header-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .header-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-meta .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      display: inline-block;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── TOC ──────────────────────────────────────────────────── */
+    .toc {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--accent-purple);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin: 40px 0 48px;
+    }
+
+    .toc h2 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-purple);
+      margin-bottom: 14px;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 6px 24px;
+    }
+
+    .toc li {
+      counter-increment: toc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .toc li::before {
+      content: counter(toc, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-purple);
+      opacity: 0.7;
+      min-width: 24px;
+    }
+
+    .toc a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .toc a:hover { color: var(--text-primary); }
+
+    /* ── Sections ─────────────────────────────────────────────── */
+    .section {
+      margin-bottom: 64px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-teal);
+      background: rgba(100,255,218,0.08);
+      border: 1px solid rgba(100,255,218,0.2);
+      border-radius: var(--radius-sm);
+      padding: 3px 10px;
+      letter-spacing: 1px;
+    }
+
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ── Sub-section header ───────────────────────────────────── */
+    .sub-section-header {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 36px 0 16px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent-blue);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sub-section-header .sub-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-blue);
+      background: rgba(64,196,255,0.08);
+      border: 1px solid rgba(64,196,255,0.2);
+      border-radius: var(--radius-sm);
+      padding: 2px 8px;
+    }
+
+    /* Method header */
+    .method-header {
+      margin: 28px 0 10px;
+    }
+
+    .method-name {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--accent-teal);
+      background: rgba(100,255,218,0.06);
+      border: 1px solid rgba(100,255,218,0.15);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .method-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.75;
+      padding-left: 4px;
+    }
+
+    .method-desc ul {
+      list-style: none;
+      margin-top: 6px;
+      padding-left: 12px;
+    }
+
+    .method-desc ul li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .method-desc ul li::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+    }
+
+    /* ── Cards ────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* ── Info card variants ───────────────────────────────────── */
+    .info-card {
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .info-card.green {
+      background: linear-gradient(135deg, rgba(0,230,118,0.05), var(--bg-card));
+      border: 1px solid rgba(0,230,118,0.2);
+    }
+
+    .info-card.blue {
+      background: linear-gradient(135deg, rgba(64,196,255,0.05), var(--bg-card));
+      border: 1px solid rgba(64,196,255,0.2);
+    }
+
+    .info-card.orange {
+      background: linear-gradient(135deg, rgba(255,171,64,0.05), var(--bg-card));
+      border: 1px solid rgba(255,171,64,0.2);
+    }
+
+    .info-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .info-card strong {
+      color: var(--text-primary);
+    }
+
+    /* ── Warning card ─────────────────────────────────────────── */
+    .warning-card {
+      background: linear-gradient(135deg, rgba(255,171,64,0.06), rgba(22,33,62,0.8));
+      border: 1px solid rgba(255,171,64,0.25);
+      border-left: 3px solid var(--accent-orange);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .warning-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent-orange);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .warning-card-body {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .warning-card-body strong {
+      color: var(--accent-orange);
+    }
+
+    /* ── Tables ───────────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead tr {
+      background: #1e2240;
+    }
+
+    thead th {
+      padding: 13px 18px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent-teal);
+      border-bottom: 1px solid var(--border-bright);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 12px 18px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    tbody td:first-child {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent-blue);
+      font-weight: 500;
+    }
+
+    .badge-new {
+      color: var(--accent-green);
+      font-weight: 600;
+      font-size: 12px;
+      background: rgba(0,230,118,0.08);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-radius: 10px;
+      padding: 2px 9px;
+    }
+
+    .badge-mod {
+      color: var(--accent-orange);
+      font-weight: 600;
+      font-size: 12px;
+      background: rgba(255,171,64,0.08);
+      border: 1px solid rgba(255,171,64,0.2);
+      border-radius: 10px;
+      padding: 2px 9px;
+    }
+
+    /* ── Code Blocks ──────────────────────────────────────────── */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 3px solid var(--accent-teal);
+      border-radius: var(--radius-sm);
+      padding: 20px 22px;
+      overflow-x: auto;
+      margin: 12px 0;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-code);
+      line-height: 1.75;
+    }
+
+    /* Inline code */
+    p code, li code, td code {
+      background: rgba(100,255,218,0.08);
+      border: 1px solid rgba(100,255,218,0.15);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12.5px;
+      color: var(--accent-teal);
+    }
+
+    /* Syntax highlighting (static) */
+    .kw  { color: #c792ea; }   /* keywords */
+    .tp  { color: #82aaff; }   /* types */
+    .fn  { color: #82aaff; }   /* functions */
+    .str { color: #c3e88d; }   /* strings */
+    .cmt { color: #546e7a; font-style: italic; } /* comments */
+    .num { color: #f78c6c; }   /* numbers */
+    .pp  { color: #89ddff; }   /* preprocessor / arrows */
+    .op  { color: #89ddff; }   /* operators */
+
+    /* ── Diagram / Flow Box ───────────────────────────────────── */
+    .diagram-box {
+      background: var(--bg-code);
+      border: 1px solid rgba(100,255,218,0.12);
+      border-radius: var(--radius-md);
+      padding: 22px 24px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    .diagram-box pre {
+      background: transparent;
+      border: none;
+      border-left: none;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .diagram-box code {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.9;
+    }
+
+    .diagram-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-teal);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* ── Relationship Diagram ─────────────────────────────────── */
+    .rel-diagram {
+      background: var(--bg-code);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── Feature pill list ───────────────────────────────────── */
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .feature-list li {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: var(--accent-green);
+      border: 1px solid rgba(0,230,118,0.3);
+      background: rgba(0,230,118,0.05);
+    }
+
+    .feature-list.blue li {
+      color: var(--accent-blue);
+      border-color: rgba(64,196,255,0.3);
+      background: rgba(64,196,255,0.05);
+    }
+
+    .feature-list.orange li {
+      color: var(--accent-orange);
+      border-color: rgba(255,171,64,0.3);
+      background: rgba(255,171,64,0.05);
+    }
+
+    /* ── Dependency graph ─────────────────────────────────────── */
+    .dep-graph {
+      background: var(--bg-code);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .dep-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .dep-node {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .dep-node.green {
+      color: var(--accent-green);
+      border-color: rgba(0,230,118,0.3);
+      background: rgba(0,230,118,0.06);
+    }
+
+    .dep-node.blue {
+      color: var(--accent-blue);
+      border-color: rgba(64,196,255,0.3);
+      background: rgba(64,196,255,0.06);
+    }
+
+    .dep-node.purple {
+      color: var(--accent-purple);
+      border-color: rgba(206,147,216,0.3);
+      background: rgba(206,147,216,0.06);
+    }
+
+    .dep-node.teal {
+      color: var(--accent-teal);
+      border-color: rgba(100,255,218,0.3);
+      background: rgba(100,255,218,0.06);
+    }
+
+    .dep-node.orange {
+      color: var(--accent-orange);
+      border-color: rgba(255,171,64,0.3);
+      background: rgba(255,171,64,0.06);
+    }
+
+    .dep-arrow {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-family: var(--font-mono);
+    }
+
+    .dep-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ── Phase diagram table ──────────────────────────────────── */
+    .phase-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    .phase-table-wrap table thead th:nth-child(5) {
+      text-align: center;
+    }
+
+    .phase-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    .phase-badge.high {
+      color: #ff5252;
+      background: rgba(255,82,82,0.1);
+      border: 1px solid rgba(255,82,82,0.3);
+    }
+
+    .phase-badge.mid {
+      color: var(--accent-orange);
+      background: rgba(255,171,64,0.1);
+      border: 1px solid rgba(255,171,64,0.3);
+    }
+
+    .phase-badge.low {
+      color: var(--accent-green);
+      background: rgba(0,230,118,0.1);
+      border: 1px solid rgba(0,230,118,0.3);
+    }
+
+    /* ── Dividers ─────────────────────────────────────────────── */
+    .sub-divider {
+      border: none;
+      border-top: 1px dashed var(--border-subtle);
+      margin: 30px 0;
+    }
+
+    /* ── Utilities ────────────────────────────────────────────── */
+    .mt-sm { margin-top: 10px; }
+    .mt-md { margin-top: 20px; }
+    .mt-lg { margin-top: 36px; }
+    .mb-sm { margin-bottom: 10px; }
+    .mb-md { margin-bottom: 20px; }
+    .text-muted { color: var(--text-muted); font-size: 14px; }
+    .text-secondary { color: var(--text-secondary); font-size: 14px; line-height: 1.8; }
+
+    p.body-text {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 14px;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .site-footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-subtle);
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .site-footer span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-badge">Implementation Reference</div>
+  <h1><span class="hl">CoreLib Phase 2</span><br>아키텍처 강화 구현 상세</h1>
+  <p class="header-subtitle">SpinWait &middot; EventSignal &middot; TaskGraph &middot; ThreadSafeHashMap</p>
+  <div class="header-meta">
+    <span><span class="dot"></span>MyYachtDice Engine</span>
+    <span><span class="dot"></span>C++17 · Windows API</span>
+    <span><span class="dot"></span>2026-03-11</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CONTAINER
+════════════════════════════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="목차">
+    <h2>목차</h2>
+    <ol>
+      <li><a href="#sec1">개요 및 파일 변경 요약</a></li>
+      <li><a href="#sec2">SpinWait</a></li>
+      <li><a href="#sec3">EventSignal</a></li>
+      <li><a href="#sec4">TaskGraph</a></li>
+      <li><a href="#sec5">ThreadSafeHashMap&lt;K, V&gt;</a></li>
+      <li><a href="#sec6">의존성 관계</a></li>
+      <li><a href="#sec7">주의사항 및 제약</a></li>
+    </ol>
+  </nav>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 1 — 개요
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec1">
+    <div class="section-header">
+      <span class="section-num">SECTION 01</span>
+      <h2>개요 및 파일 변경 요약</h2>
+    </div>
+
+    <div class="info-card blue mb-md">
+      <p>
+        Phase 2에서는 CoreLib의 스레딩 아키텍처를 강화하는 <strong>4가지 기능</strong>을 추가했습니다.
+        각 모듈은 독립적으로 사용할 수 있으며, TaskGraph는 Phase 1의 CountdownEvent와 JobQueue에 의존합니다.
+      </p>
+    </div>
+
+    <div class="table-wrap mb-md">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>기능</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td style="color:var(--accent-blue);font-weight:600;">SpinWait</td>
+            <td>점진적 백오프 대기 전략</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td style="color:var(--accent-blue);font-weight:600;">EventSignal</td>
+            <td>단순 이벤트 기반 신호 메커니즘</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td style="color:var(--accent-blue);font-weight:600;">TaskGraph</td>
+            <td>DAG 기반 잡 의존성 그래프</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td style="color:var(--accent-blue);font-weight:600;">ThreadSafeHashMap&lt;K, V&gt;</td>
+            <td>RW 락 기반 스레드 안전 해시맵</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">1.1</span>
+      파일 변경 요약
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>파일</th>
+            <th>유형</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CoreLib/SpinWait.h</td>
+            <td><span class="badge-new">신규 (헤더 전용)</span></td>
+            <td>단계적 백오프 대기 유틸리티</td>
+          </tr>
+          <tr>
+            <td>CoreLib/EventSignal.h</td>
+            <td><span class="badge-new">신규 (헤더 전용)</span></td>
+            <td>Windows auto-reset Event 기반 신호</td>
+          </tr>
+          <tr>
+            <td>CoreLib/TaskGraph.h</td>
+            <td><span class="badge-new">신규</span></td>
+            <td>TaskNode + TaskGraph 선언</td>
+          </tr>
+          <tr>
+            <td>CoreLib/TaskGraph.cpp</td>
+            <td><span class="badge-new">신규</span></td>
+            <td>DAG 실행, DFS 순환 검증 구현</td>
+          </tr>
+          <tr>
+            <td>CoreLib/ThreadSafeHashMap.h</td>
+            <td><span class="badge-new">신규 (헤더 전용)</span></td>
+            <td>RW Lock 기반 concurrent 해시맵</td>
+          </tr>
+          <tr>
+            <td>CoreLib/CoreLib.vcxproj</td>
+            <td><span class="badge-mod">수정</span></td>
+            <td>새 파일 등록</td>
+          </tr>
+          <tr>
+            <td>CoreLib/CoreLib.vcxproj.filters</td>
+            <td><span class="badge-mod">수정</span></td>
+            <td>Thread 필터에 배치</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 2 — SpinWait
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec2">
+    <div class="section-header">
+      <span class="section-num">SECTION 02</span>
+      <h2>SpinWait</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.1</span>
+      클래스 개요
+    </div>
+
+    <p class="body-text">
+      헤더 전용. 반복 횟수에 따라 자동으로 대기 전략을 전환하는 점진적 백오프 유틸리티입니다.
+    </p>
+
+    <div class="info-card blue">
+      <p><strong>설계 원칙:</strong></p>
+      <ul style="list-style:none;margin-top:8px;padding-left:4px;">
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          짧은 경합: CPU에 가깝게 유지 (<code>YieldProcessor</code>)
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          중간 경합: 다른 스레드에 양보 (<code>SwitchToThread</code>)
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          긴 경합: OS 타임슬라이스 양보 (<code>Sleep</code>)
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          기존 Lock의 고정 <code>MAX_SPIN_COUNT=5000</code> 스핀락보다 효율적
+        </li>
+      </ul>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.2</span>
+      백오프 단계
+    </div>
+
+    <div class="phase-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>반복 횟수</th>
+            <th>함수</th>
+            <th>동작</th>
+            <th>CPU 비용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>0 ~ 9</td>
+            <td><code>YieldProcessor()</code></td>
+            <td>CPU 파이프라인 힌트, 동일 코어 유지</td>
+            <td><span class="phase-badge high">높음 (busy-wait)</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>10 ~ 19</td>
+            <td><code>SwitchToThread()</code></td>
+            <td>동일 우선순위 스레드에 실행 양보</td>
+            <td><span class="phase-badge mid">중간</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>20+</td>
+            <td><code>Sleep(1)</code></td>
+            <td>OS 타임슬라이스 양보, 다른 코어/스레드 허용</td>
+            <td><span class="phase-badge low">낮음</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.3</span>
+      멤버 변수
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>멤버</th>
+            <th>타입</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>m_count</td>
+            <td style="color:var(--accent-purple);">int32</td>
+            <td>현재 SpinOnce() 호출 횟수</td>
+          </tr>
+          <tr>
+            <td>YIELD_THRESHOLD</td>
+            <td style="color:var(--accent-purple);">static constexpr int32 = 10</td>
+            <td>Phase 2 전환 임계값</td>
+          </tr>
+          <tr>
+            <td>SLEEP_THRESHOLD</td>
+            <td style="color:var(--accent-purple);">static constexpr int32 = 20</td>
+            <td>Phase 3 전환 임계값</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.4</span>
+      API 상세
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void SpinOnce()</div>
+      <div class="method-desc">
+        <ul>
+          <li>m_count에 따라 3단계 백오프 자동 전환</li>
+          <li>호출 후 m_count 증가</li>
+          <li><strong>스레드 안전</strong>: 인스턴스별 사용 (TLS 또는 로컬 변수), 공유 불필요</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool NextSpinWillYield() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>다음 SpinOnce()가 OS 양보(Phase 2+)를 수행하는지 확인</li>
+          <li><code>m_count &gt;= YIELD_THRESHOLD</code> 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Reset()</div>
+      <div class="method-desc">
+        <ul>
+          <li>m_count를 0으로 초기화. 재사용 시 호출</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">int32 Count() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>현재 반복 횟수 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.5</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="cmt">// 리소스 준비 대기</span>
+<span class="tp">SpinWait</span> wait;
+<span class="kw">while</span> (!resource.<span class="fn">IsReady</span>())
+{
+    wait.<span class="fn">SpinOnce</span>();
+    <span class="cmt">// 자동 전환: CPU힌트(0~9) → OS양보(10~19) → Sleep(20+)</span>
+}
+
+<span class="cmt">// Lock 내부 최적화 예시</span>
+<span class="tp">SpinWait</span> wait;
+<span class="kw">while</span> (!<span class="fn">TryAcquireLock</span>())
+{
+    <span class="kw">if</span> (wait.<span class="fn">NextSpinWillYield</span>())
+    {
+        <span class="cmt">// 경합이 길다 → 다른 전략 고려</span>
+        <span class="kw">break</span>;
+    }
+    wait.<span class="fn">SpinOnce</span>();
+}</code></pre>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.6</span>
+      백오프 전략 시각화
+    </div>
+
+    <div class="diagram-box">
+      <div class="diagram-title">SpinOnce() 백오프 흐름</div>
+      <pre><code>SpinOnce() 호출
+     │
+     ├─ m_count &lt; 10 ──→ YieldProcessor()  ──→ CPU 파이프라인 힌트
+     │                                          (나노초 단위, 코어 유지)
+     │
+     ├─ m_count &lt; 20 ──→ SwitchToThread()  ──→ 같은 우선순위 스레드 양보
+     │                                          (마이크로초 단위)
+     │
+     └─ m_count ≥ 20 ──→ Sleep(1)          ──→ OS 타임슬라이스 양보
+                                                (밀리초 단위, CPU 해방)
+     m_count++</code></pre>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 3 — EventSignal
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec3">
+    <div class="section-header">
+      <span class="section-num">SECTION 03</span>
+      <h2>EventSignal</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.1</span>
+      클래스 개요
+    </div>
+
+    <p class="body-text">
+      헤더 전용. Windows auto-reset Event 기반의 단순 신호 메커니즘입니다.
+    </p>
+
+    <p class="body-text"><strong style="color:var(--text-primary);">CountdownEvent와의 차이:</strong></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>특성</th>
+            <th>EventSignal</th>
+            <th>CountdownEvent</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Event 타입</td>
+            <td style="color:var(--accent-blue);">Auto-reset</td>
+            <td style="color:var(--accent-green);">Manual-reset</td>
+          </tr>
+          <tr>
+            <td>카운터</td>
+            <td>없음</td>
+            <td style="color:var(--accent-purple);">Atomic&lt;int32&gt;</td>
+          </tr>
+          <tr>
+            <td>대기자 깨우기</td>
+            <td>1명만</td>
+            <td>모든 대기자</td>
+          </tr>
+          <tr>
+            <td>신호 후 상태</td>
+            <td>자동 비신호로 복귀</td>
+            <td>신호 유지</td>
+          </tr>
+          <tr>
+            <td>용도</td>
+            <td>1:1 신호 전달</td>
+            <td>N개 작업 완료 대기</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.2</span>
+      멤버 변수
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>멤버</th>
+            <th>타입</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>m_event</td>
+            <td style="color:var(--accent-purple);">HANDLE</td>
+            <td>Windows auto-reset Event 핸들</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.3</span>
+      API 상세
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">EventSignal() — 생성자</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>CreateEvent(nullptr, FALSE, FALSE, nullptr)</code> — auto-reset, 비신호 상태로 시작</li>
+          <li><code>ASSERT_TRIG_CRASH</code>로 실패 시 크래시</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">~EventSignal() — 소멸자</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>CloseHandle(m_event)</code> 호출. RAII 패턴.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Set()</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>SetEvent(m_event)</code> 호출</li>
+          <li>대기 중인 스레드 <strong>1명만</strong> 깨움 (auto-reset이므로 자동 비신호 복귀)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Wait()</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>WaitForSingleObject(m_event, INFINITE)</code> — 신호까지 블로킹 대기</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Wait(uint32 timeoutMs)</div>
+      <div class="method-desc">
+        <ul>
+          <li>타임아웃 지정 대기</li>
+          <li>반환: <code>true</code> = 신호 수신, <code>false</code> = 타임아웃</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Reset()</div>
+      <div class="method-desc">
+        <ul>
+          <li>수동으로 비신호 상태 복귀 (auto-reset이므로 보통 불필요)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.4</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="cmt">// 워커 → 메인 스레드 신호</span>
+<span class="tp">EventSignal</span> loadComplete;
+
+<span class="cmt">// 워커 스레드</span>
+jobQueue-&gt;<span class="fn">DoAsync</span>(<span class="kw">true</span>, [&amp;loadComplete]()
+{
+    <span class="fn">LoadHeavyResource</span>();
+    loadComplete.<span class="fn">Set</span>();  <span class="cmt">// 완료 신호 → 대기자 1명 깨움</span>
+});
+
+<span class="cmt">// 메인 스레드</span>
+loadComplete.<span class="fn">Wait</span>();  <span class="cmt">// 로드 완료까지 블로킹</span>
+<span class="fn">UseResource</span>();
+
+<span class="cmt">// 타임아웃 사용</span>
+<span class="kw">if</span> (loadComplete.<span class="fn">Wait</span>(<span class="num">5000</span>))
+    <span class="fn">UseResource</span>();
+<span class="kw">else</span>
+    <span class="fn">HandleTimeout</span>();</code></pre>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 4 — TaskGraph
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec4">
+    <div class="section-header">
+      <span class="section-num">SECTION 04</span>
+      <h2>TaskGraph</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.1</span>
+      아키텍처 개요
+    </div>
+
+    <p class="body-text">
+      2개 클래스로 구성된 DAG 기반 작업 의존성 시스템입니다.
+      의존 관계를 선언하면 최대 병렬도를 유지하며 순서대로 실행합니다.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">TaskGraph 구조 및 실행 흐름</div>
+      <pre><code>TaskGraph
+  │
+  ├── AddTask("A", callback) ──→ TaskNode A (id=0, deps=0)
+  ├── AddTask("B", callback) ──→ TaskNode B (id=1, deps=0)
+  └── AddTask("C", callback) ──→ TaskNode C (id=2, deps=2)
+                                       │
+                                  C-&gt;DependsOn(A)
+                                  C-&gt;DependsOn(B)
+                                       │
+                              Execute() 실행 시:
+                              A,B 병렬 실행 → C 순차 실행</code></pre>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.2</span>
+      TaskNode — 내부 작업 노드
+    </div>
+
+    <div class="info-card orange">
+      <p><strong>생성 방법</strong>: <code>TaskGraph::AddTask()</code>로만 생성 (생성자 private, friend class TaskGraph)</p>
+    </div>
+
+    <p class="body-text"><strong style="color:var(--text-primary);">멤버 변수</strong></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>멤버</th>
+            <th>타입</th>
+            <th>접근</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>m_id</td>
+            <td style="color:var(--accent-purple);">int32</td>
+            <td style="color:var(--text-muted);">private</td>
+            <td>고유 노드 ID (자동 할당)</td>
+          </tr>
+          <tr>
+            <td>m_name</td>
+            <td style="color:var(--accent-purple);">std::string</td>
+            <td style="color:var(--text-muted);">private</td>
+            <td>디버그용 이름</td>
+          </tr>
+          <tr>
+            <td>m_callback</td>
+            <td style="color:var(--accent-purple);">CallbackType</td>
+            <td style="color:var(--text-muted);">private</td>
+            <td>실행할 작업</td>
+          </tr>
+          <tr>
+            <td>m_dependencies</td>
+            <td style="color:var(--accent-purple);">vector&lt;int32&gt;</td>
+            <td style="color:var(--text-muted);">private</td>
+            <td>이 노드가 의존하는 노드 ID 목록</td>
+          </tr>
+          <tr>
+            <td>m_dependents</td>
+            <td style="color:var(--accent-purple);">vector&lt;int32&gt;</td>
+            <td style="color:var(--text-muted);">private</td>
+            <td>이 노드에 의존하는 노드 ID 목록</td>
+          </tr>
+          <tr>
+            <td>m_unfinishedDependencies</td>
+            <td style="color:var(--accent-purple);">Atomic&lt;int32&gt;</td>
+            <td style="color:var(--text-muted);">private</td>
+            <td>미완료 의존성 카운터</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="body-text mt-md"><strong style="color:var(--text-primary);">Public API</strong></p>
+
+    <div class="method-header">
+      <div class="method-name">TaskNode* DependsOn(TaskNode* other)</div>
+      <div class="method-desc">
+        <ul>
+          <li>이 노드가 other에 의존함을 선언 (other 완료 후 실행)</li>
+          <li>양방향 등록: <code>this-&gt;m_dependencies</code>에 other.id 추가, <code>other-&gt;m_dependents</code>에 this.id 추가</li>
+          <li><code>this</code> 반환 (체이닝 가능)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">int32 GetId() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>노드 ID 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">const std::string&amp; GetName() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>노드 이름 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="sub-divider" />
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.3</span>
+      TaskGraph — DAG 실행기
+    </div>
+
+    <p class="body-text"><strong style="color:var(--text-primary);">멤버 변수</strong></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>멤버</th>
+            <th>타입</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>m_nodes</td>
+            <td style="color:var(--accent-purple);">vector&lt;unique_ptr&lt;TaskNode&gt;&gt;</td>
+            <td>모든 노드 소유</td>
+          </tr>
+          <tr>
+            <td>m_nextId</td>
+            <td style="color:var(--accent-purple);">int32</td>
+            <td>다음 할당할 노드 ID</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="body-text mt-md"><strong style="color:var(--text-primary);">Public API 상세</strong></p>
+
+    <div class="method-header">
+      <div class="method-name">TaskNode* AddTask(const std::string&amp; name, CallbackType callback)</div>
+      <div class="method-desc">
+        <ul>
+          <li>새 TaskNode 생성 (id 자동 할당)</li>
+          <li><code>m_nodes</code>에 unique_ptr로 소유</li>
+          <li>반환된 포인터로 DependsOn 체이닝 가능</li>
+          <li>내부: <code>new TaskNode(id, name, callback)</code> + <code>unique_ptr</code> 래핑 (private 생성자이므로 make_unique 사용 불가)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void DependsOn(int32 taskId, int32 dependencyId)</div>
+      <div class="method-desc">
+        <ul>
+          <li>ID 기반 의존성 선언 (TaskNode::DependsOn의 ID 버전)</li>
+          <li>양쪽 노드에 <code>ASSERT_TRIG_CRASH</code> null 검증</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Execute()</div>
+      <div class="method-desc">
+        <ul>
+          <li>빈 그래프면 즉시 반환</li>
+          <li><code>Validate()</code>로 사이클 검증 (실패 시 크래시)</li>
+          <li>각 노드의 <code>m_unfinishedDependencies</code>를 <code>m_dependencies.size()</code>로 초기화</li>
+          <li><code>CountdownEvent(totalCount)</code> 생성</li>
+          <li>루트 노드(의존성 0개)를 <code>SubmitReady()</code>로 제출</li>
+          <li><code>countdown.Wait()</code> — 모든 노드 완료까지 블로킹</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Clear()</div>
+      <div class="method-desc">
+        <ul>
+          <li>모든 노드 제거, m_nextId 초기화. 그래프 재사용 가능</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Validate() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>DFS 기반 사이클 탐지</li>
+          <li>상태 배열: <code>0</code>=미방문, <code>1</code>=방문중(스택), <code>2</code>=완료</li>
+          <li>방문중 노드를 재방문하면 사이클 → <code>return false</code></li>
+          <li>사이클 없으면 <code>return true</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="body-text mt-md"><strong style="color:var(--text-primary);">Private 메서드</strong></p>
+
+    <div class="method-header">
+      <div class="method-name">TaskNode* FindNode(int32 id) const</div>
+      <div class="method-desc">
+        <ul>
+          <li>m_nodes에서 id로 선형 탐색</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void SubmitReady(TaskNode* node, CountdownEvent* countdown)</div>
+      <div class="method-desc">
+        <ul>
+          <li>새 <code>shared_ptr&lt;JobQueue&gt;</code> 생성</li>
+          <li><code>DoAsync(pushOnly=true, ...)</code> 호출 — 글로벌 워커 풀에 자동 등록</li>
+          <li>람다 내용:
+            <ol style="margin-top:6px;padding-left:20px;color:var(--text-secondary);font-size:14px;">
+              <li style="margin-bottom:4px;"><code>node-&gt;m_callback()</code> 실행</li>
+              <li style="margin-bottom:4px;"><code>node-&gt;m_dependents</code> 순회: 각 dependent의 <code>m_unfinishedDependencies</code> 원자적 감소</li>
+              <li style="margin-bottom:4px;">remaining이 0이면 해당 dependent도 <code>SubmitReady()</code> 호출</li>
+              <li><code>countdown-&gt;Signal()</code> — 이 노드 완료 신호</li>
+            </ol>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.4</span>
+      Execute() 내부 동작 흐름
+    </div>
+
+    <div class="diagram-box">
+      <div class="diagram-title">Execute() 실행 순서 — A, B 병렬 → C 순차</div>
+      <pre><code>Execute() 호출
+     │
+     ├─ Validate() — 사이클 검증
+     │
+     ├─ 각 노드 m_unfinishedDependencies 초기화
+     │
+     ├─ CountdownEvent(총 노드 수) 생성
+     │
+     ├─ 루트 노드(deps=0) 검색 → SubmitReady()
+     │     │
+     │     ├─ 노드 A (deps=0) → JobQueue → 워커 스레드
+     │     └─ 노드 B (deps=0) → JobQueue → 워커 스레드
+     │
+     │         워커에서 A 완료:
+     │           ├─ A의 dependents 순회
+     │           ├─ C.unfinishedDeps: 2→1 (아직 &gt;0)
+     │           └─ countdown.Signal()
+     │
+     │         워커에서 B 완료:
+     │           ├─ B의 dependents 순회
+     │           ├─ C.unfinishedDeps: 1→0 → SubmitReady(C)
+     │           └─ countdown.Signal()
+     │
+     │         워커에서 C 실행 → 완료:
+     │           └─ countdown.Signal()
+     │
+     └─ countdown.Wait() → 모든 Signal 수신 후 반환</code></pre>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.5</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="cmt">// 물리 파이프라인 의존성</span>
+<span class="tp">TaskGraph</span> graph;
+
+<span class="kw">auto</span>* broadPhase  = graph.<span class="fn">AddTask</span>(<span class="str">"BroadPhase"</span>, [&amp;]()
+{
+    physics.<span class="fn">BroadPhase</span>();
+});
+
+<span class="kw">auto</span>* narrowPhase = graph.<span class="fn">AddTask</span>(<span class="str">"NarrowPhase"</span>, [&amp;]()
+{
+    physics.<span class="fn">NarrowPhase</span>();
+});
+
+<span class="kw">auto</span>* resolve = graph.<span class="fn">AddTask</span>(<span class="str">"Resolve"</span>, [&amp;]()
+{
+    physics.<span class="fn">ResolveContacts</span>();
+});
+
+<span class="cmt">// Resolve는 BroadPhase와 NarrowPhase 둘 다 끝나야 실행</span>
+resolve-&gt;<span class="fn">DependsOn</span>(broadPhase);
+resolve-&gt;<span class="fn">DependsOn</span>(narrowPhase);
+
+graph.<span class="fn">Execute</span>();  <span class="cmt">// BroadPhase, NarrowPhase 병렬 → Resolve 순차</span>
+
+<span class="cmt">// 그래프 재사용</span>
+graph.<span class="fn">Clear</span>();
+
+<span class="cmt">// ID 기반 의존성 (포인터 대신)</span>
+<span class="kw">auto</span>* a = graph.<span class="fn">AddTask</span>(<span class="str">"A"</span>, []() { <span class="cmt">/*...*/</span> });
+<span class="kw">auto</span>* b = graph.<span class="fn">AddTask</span>(<span class="str">"B"</span>, []() { <span class="cmt">/*...*/</span> });
+graph.<span class="fn">DependsOn</span>(b-&gt;<span class="fn">GetId</span>(), a-&gt;<span class="fn">GetId</span>());  <span class="cmt">// B depends on A</span>
+graph.<span class="fn">Execute</span>();
+
+<span class="cmt">// 사이클 검증</span>
+<span class="kw">auto</span>* x = graph.<span class="fn">AddTask</span>(<span class="str">"X"</span>, []() {});
+<span class="kw">auto</span>* y = graph.<span class="fn">AddTask</span>(<span class="str">"Y"</span>, []() {});
+x-&gt;<span class="fn">DependsOn</span>(y);
+y-&gt;<span class="fn">DependsOn</span>(x);  <span class="cmt">// 순환!</span>
+<span class="tp">bool</span> valid = graph.<span class="fn">Validate</span>();  <span class="cmt">// false 반환</span></code></pre>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 5 — ThreadSafeHashMap
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec5">
+    <div class="section-header">
+      <span class="section-num">SECTION 05</span>
+      <h2>ThreadSafeHashMap&lt;K, V&gt;</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.1</span>
+      클래스 개요
+    </div>
+
+    <p class="body-text">
+      헤더 전용 템플릿. 기존 <code>Lock</code> (RW 스핀락)으로 <code>std::unordered_map</code>을 감싼 스레드 안전 해시맵입니다.
+    </p>
+
+    <div class="info-card blue">
+      <p><strong>설계 원칙:</strong></p>
+      <ul style="list-style:none;margin-top:8px;padding-left:4px;">
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          읽기 연산: <code>READ_LOCK</code> (다수 동시 읽기 허용)
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          쓰기 연산: <code>WRITE_LOCK</code> (단독 쓰기)
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          기존 <code>ResourceCache&lt;T&gt;</code> 패턴의 수동 Lock + unordered_map 조합을 범용화
+        </li>
+      </ul>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.2</span>
+      멤버 변수
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>멤버</th>
+            <th>타입</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>m_locks[1]</td>
+            <td style="color:var(--accent-purple);">Lock</td>
+            <td><code>USE_LOCK</code> 매크로. RW 스핀락</td>
+          </tr>
+          <tr>
+            <td>m_map</td>
+            <td style="color:var(--accent-purple);">std::unordered_map&lt;K, V&gt;</td>
+            <td>내부 해시맵</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.3</span>
+      읽기 API (READ_LOCK)
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Find(const K&amp; key, V&amp; outValue) const</div>
+      <div class="method-desc">
+        <ul>
+          <li>key에 해당하는 값을 outValue에 <strong>복사</strong></li>
+          <li>존재하면 <code>true</code>, 없으면 <code>false</code></li>
+          <li><strong>스레드 안전</strong>: READ_LOCK (다수 동시 호출 가능)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">V* FindUnsafe(const K&amp; key)</div>
+      <div class="method-desc">
+        <ul>
+          <li>내부 값에 대한 <strong>포인터</strong> 직접 반환</li>
+          <li><strong>락 없음</strong> — 호출자가 외부 락을 보유해야 함</li>
+          <li>성능 임계 경로에서 복사 오버헤드 제거용</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Contains(const K&amp; key) const</div>
+      <div class="method-desc">
+        <ul>
+          <li>key 존재 여부만 확인</li>
+          <li>READ_LOCK 하에 <code>find != end</code> 검사</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">size_t Size() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>현재 원소 수 반환 (READ_LOCK)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Empty() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>비어 있는지 확인 (READ_LOCK)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void ForEachRead(std::function&lt;void(const K&amp;, const V&amp;)&gt; func) const</div>
+      <div class="method-desc">
+        <ul>
+          <li>READ_LOCK 하에 전체 순회</li>
+          <li>콜백에 const 참조 전달 (읽기 전용)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.4</span>
+      쓰기 API (WRITE_LOCK)
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Insert(const K&amp; key, const V&amp; value)</div>
+      <div class="method-desc">
+        <ul>
+          <li>key가 없을 때만 삽입 (emplace)</li>
+          <li>삽입했으면 <code>true</code>, 이미 존재하면 <code>false</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool InsertOrAssign(const K&amp; key, V value)</div>
+      <div class="method-desc">
+        <ul>
+          <li>key가 없으면 삽입, 있으면 덮어씀</li>
+          <li>항상 <code>true</code> 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">V&amp; operator[](const K&amp; key)</div>
+      <div class="method-desc">
+        <ul>
+          <li>std::unordered_map과 동일 의미</li>
+          <li>key가 없으면 기본값으로 생성</li>
+          <li>WRITE_LOCK 하에 참조 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Erase(const K&amp; key)</div>
+      <div class="method-desc">
+        <ul>
+          <li>key 제거. 제거했으면 <code>true</code>, 없으면 <code>false</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Clear()</div>
+      <div class="method-desc">
+        <ul>
+          <li>전체 삭제 (WRITE_LOCK)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void ForEach(std::function&lt;void(const K&amp;, V&amp;)&gt; func)</div>
+      <div class="method-desc">
+        <ul>
+          <li>WRITE_LOCK 하에 전체 순회</li>
+          <li>콜백에 non-const 참조 전달 (수정 가능)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.5</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="cmt">// 텍스처 캐시</span>
+<span class="tp">ThreadSafeHashMap</span>&lt;<span class="tp">std::string</span>, <span class="tp">Texture</span>*&gt; textureCache;
+
+<span class="cmt">// 삽입 (워커 스레드에서 안전)</span>
+textureCache.<span class="fn">Insert</span>(<span class="str">"albedo"</span>, loadedTexture);
+
+<span class="cmt">// 조회 (메인 스레드에서 안전)</span>
+<span class="tp">Texture</span>* tex = <span class="kw">nullptr</span>;
+<span class="kw">if</span> (textureCache.<span class="fn">Find</span>(<span class="str">"albedo"</span>, tex))
+{
+    material-&gt;<span class="fn">SetTexture</span>(<span class="str">"AlbedoMap"</span>, tex);
+}
+
+<span class="cmt">// 존재 확인</span>
+<span class="kw">if</span> (textureCache.<span class="fn">Contains</span>(<span class="str">"normal"</span>))
+    <span class="cmt">// ...</span>
+
+<span class="cmt">// 덮어쓰기</span>
+textureCache.<span class="fn">InsertOrAssign</span>(<span class="str">"albedo"</span>, newTexture);
+
+<span class="cmt">// 순회</span>
+textureCache.<span class="fn">ForEachRead</span>([](const <span class="tp">std::string</span>&amp; key, <span class="tp">Texture</span>* const&amp; tex)
+{
+    <span class="fn">LogTexture</span>(key, tex);
+});
+
+<span class="cmt">// 제거</span>
+textureCache.<span class="fn">Erase</span>(<span class="str">"albedo"</span>);
+textureCache.<span class="fn">Clear</span>();  <span class="cmt">// 전체 삭제</span></code></pre>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 6 — 의존성 관계
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec6">
+    <div class="section-header">
+      <span class="section-num">SECTION 06</span>
+      <h2>의존성 관계</h2>
+    </div>
+
+    <div class="dep-graph">
+      <div class="dep-row">
+        <span style="font-size:12px;font-weight:700;color:var(--text-muted);font-family:var(--font-mono);letter-spacing:1px;min-width:160px;">PHASE 1 (기존)</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text-muted);font-family:var(--font-mono);letter-spacing:1px;">PHASE 2 (신규)</span>
+      </div>
+
+      <div class="dep-row" style="margin-top:8px;">
+        <span class="dep-node green">CountdownEvent</span>
+        <span class="dep-arrow">◄──────────</span>
+        <span class="dep-node blue">TaskGraph</span>
+        <span class="dep-note">(Execute 내부에서 CountdownEvent 사용)</span>
+      </div>
+
+      <div class="dep-row">
+        <span class="dep-node green" style="margin-left:0;">JobQueue</span>
+        <span class="dep-arrow">◄──────────</span>
+        <span class="dep-node blue" style="opacity:0.6;">TaskGraph</span>
+        <span class="dep-note">(SubmitReady 내부에서 JobQueue 사용)</span>
+      </div>
+
+      <div class="dep-row" style="margin-top:8px;">
+        <span class="dep-node green">ParallelFor</span>
+        <span style="flex:1;min-width:40px;border-top:1px dashed var(--border-subtle);margin:0 12px;"></span>
+        <span class="dep-node teal">SpinWait</span>
+        <span class="dep-note">독립 모듈</span>
+      </div>
+
+      <div class="dep-row">
+        <span class="dep-node green">Future / Promise</span>
+        <span style="flex:1;min-width:40px;border-top:1px dashed var(--border-subtle);margin:0 12px;"></span>
+        <span class="dep-node teal">EventSignal</span>
+        <span class="dep-note">독립 모듈</span>
+      </div>
+
+      <div class="dep-row">
+        <span class="dep-node orange">Lock / USE_LOCK</span>
+        <span class="dep-arrow">◄──────────</span>
+        <span class="dep-node teal">ThreadSafeHashMap</span>
+        <span class="dep-note">기존 Lock 시스템 활용</span>
+      </div>
+    </div>
+
+    <p class="body-text mt-md">
+      <strong>TaskGraph</strong>는 Phase 1의 <code>CountdownEvent</code>와 기존 <code>JobQueue</code>에 의존합니다.
+      <strong>SpinWait</strong>, <strong>EventSignal</strong>, <strong>ThreadSafeHashMap</strong>은 독립 모듈입니다.
+      <strong>ThreadSafeHashMap</strong>은 기존 <code>Lock</code> 시스템(<code>USE_LOCK</code> / <code>READ_LOCK</code> / <code>WRITE_LOCK</code>)을 활용합니다.
+    </p>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 7 — 주의사항
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec7">
+    <div class="section-header">
+      <span class="section-num">SECTION 07</span>
+      <h2>주의사항 및 제약</h2>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">
+        <span>&#9888;</span> SpinWait는 인스턴스별 사용
+      </div>
+      <div class="warning-card-body">
+        여러 스레드가 하나의 <strong>SpinWait</strong>을 공유하면 안 됩니다.
+        스레드 로컬 변수 또는 스택 변수로 생성하세요.
+        공유할 경우 m_count 경쟁으로 백오프 단계가 올바르게 작동하지 않습니다.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">
+        <span>&#9888;</span> EventSignal은 Auto-reset
+      </div>
+      <div class="warning-card-body">
+        <strong>Set()</strong> 호출 시 대기자 1명만 깨우고 자동으로 비신호 상태로 복귀합니다.
+        여러 대기자를 동시에 깨우려면 <strong>CountdownEvent</strong>를 사용하세요.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">
+        <span>&#9888;</span> TaskGraph::Execute()는 블로킹
+      </div>
+      <div class="warning-card-body">
+        모든 노드 완료까지 호출 스레드가 대기합니다.
+        메인 스레드에서 호출 시 <strong>프레임 멈춤</strong>에 주의하세요.
+        프레임 내 실행 시에는 비동기 Execute 래퍼를 별도 구성하거나 워커 스레드에서 호출하세요.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">
+        <span>&#9888;</span> TaskGraph 사이클 금지
+      </div>
+      <div class="warning-card-body">
+        <strong>DependsOn</strong>으로 순환 의존성을 만들면 <strong>Execute()</strong> 시 <code>ASSERT_TRIG_CRASH</code>가 발생합니다.
+        <code>Validate()</code>로 사전 검증이 가능합니다.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">
+        <span>&#9888;</span> TaskGraph는 Execute() 중 수정 금지
+      </div>
+      <div class="warning-card-body">
+        <strong>Execute()</strong> 호출 중에 <code>AddTask()</code>나 <code>DependsOn()</code>을 호출하면 정의되지 않은 동작입니다.
+        모든 노드를 등록한 후 <strong>Execute()</strong>를 호출하세요.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">
+        <span>&#9888;</span> ThreadSafeHashMap::FindUnsafe()는 락 없음
+      </div>
+      <div class="warning-card-body">
+        호출자가 외부에서 락을 보유해야 합니다.
+        잘못 사용하면 <strong>데이터 레이스</strong>가 발생합니다.
+        성능 임계 경로 외에는 <strong>Find()</strong>를 사용하세요.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">
+        <span>&#9888;</span> ThreadSafeHashMap::operator[]는 WRITE_LOCK
+      </div>
+      <div class="warning-card-body">
+        읽기 목적으로도 <strong>WRITE_LOCK</strong>을 획득합니다.
+        읽기 전용이면 반드시 <strong>Find()</strong>를 사용하세요.
+        불필요한 쓰기 락 경쟁을 방지해 성능을 개선합니다.
+      </div>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <span><span class="footer-dot"></span>Phase 2 Implementation Reference</span>
+  <span><span class="footer-dot"></span>CoreLib Threading Extensions</span>
+  <span><span class="footer-dot"></span>MyYachtDice Engine</span>
+  <span><span class="footer-dot"></span>2026-03-11</span>
+</footer>
+
+</body>
+</html>

@@ -61,6 +61,15 @@ namespace GameEngine
 		}
 	}
 
+	void GameObject::Start()
+	{
+		if (!m_active)
+			return;
+
+		for (auto& comp : m_components)
+			comp->Start();
+	}
+
 	void GameObject::Update(float dt)
 	{
 		if (!m_active)

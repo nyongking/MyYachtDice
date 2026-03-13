@@ -12,6 +12,8 @@
 #include "LightComponent.h"
 #include "ModelComponent.h"
 #include "QuadComponent.h"
+#include "PhysicsManager.h"
+#include "RigidBodyComponent.h"
 
 #include <objbase.h>
 
@@ -23,6 +25,7 @@ namespace GameEngine
 	static std::shared_ptr<MaterialManager> s_materialMgr;
 	static std::shared_ptr<TextureManager>  s_textureMgr;
 	static std::shared_ptr<ModelManager>    s_modelMgr;
+	static std::shared_ptr<PhysicsManager>  s_physicsMgr;
 
 	// 외부 접근용 raw pointer
 	GeometryManager* GGeometryManager = nullptr;
@@ -30,6 +33,12 @@ namespace GameEngine
 	MaterialManager* GMaterialManager = nullptr;
 	TextureManager*  GTextureManager  = nullptr;
 	ModelManager*    GModelManager    = nullptr;
+	PhysicsManager*  GPhysicsManager  = nullptr;
+
+#ifdef _DEBUG
+	bool GDebugDrawColliders = true;
+	Render::Material* GDebugWireframeMaterial = nullptr;
+#endif
 
 	bool InitEngine()
 	{
@@ -66,23 +75,32 @@ namespace GameEngine
 		if (!GModelManager->Initialize(device))
 			return false;
 
+		// Physics
+		s_physicsMgr = std::shared_ptr<PhysicsManager>(new PhysicsManager());
+		GPhysicsManager = s_physicsMgr.get();
+		if (!GPhysicsManager->Initialize())
+			return false;
+
 		// 내장 컴포넌트 등록 — 씬 역직렬화 시 타입명으로 생성 가능
-		ComponentRegistry::Register<CameraComponent>("CameraComponent");
-		ComponentRegistry::Register<LightComponent> ("LightComponent");
-		ComponentRegistry::Register<ModelComponent> ("ModelComponent");
-		ComponentRegistry::Register<QuadComponent>  ("QuadComponent");
+		ComponentRegistry::Register<CameraComponent>   ("CameraComponent");
+		ComponentRegistry::Register<LightComponent>    ("LightComponent");
+		ComponentRegistry::Register<ModelComponent>    ("ModelComponent");
+		ComponentRegistry::Register<QuadComponent>     ("QuadComponent");
+		ComponentRegistry::Register<RigidBodyComponent>("RigidBodyComponent");
 
 		return true;
 	}
 
 	void ReleaseEngine()
 	{
+		s_physicsMgr.reset();
 		s_modelMgr.reset();
 		s_textureMgr.reset();
 		s_materialMgr.reset();
 		s_shaderMgr.reset();
 		s_geometryMgr.reset();
 
+		GPhysicsManager  = nullptr;
 		GModelManager    = nullptr;
 		GTextureManager  = nullptr;
 		GMaterialManager = nullptr;

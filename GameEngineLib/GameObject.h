@@ -43,6 +43,7 @@ namespace GameEngine
 		// Awake()를 호출하고, 호출자가 이후 Deserialize()를 적용할 수 있도록 raw ptr 반환.
 		Component* AddComponent(std::unique_ptr<Component> comp);
 
+		void Start();
 		void Update(float dt);
 		void LateUpdate(float dt);
 

@@ -2899,7 +2899,7 @@ value with the default value for a given type
 enum class value_t : std::uint8_t
 {
     null,             ///< null value
-    object,           ///< object (unordered set of name/value pairs)
+    object,           ///< object (unordered set of name/value m_Pairs)
     array,            ///< array (ordered collection of values)
     string,           ///< string value
     boolean,          ///< boolean value
@@ -7606,11 +7606,11 @@ class lexer : public lexer_base<BasicJsonType>
     checks if it is inside the range. If a violation was detected, set up an
     error message and return false. Otherwise, return true.
 
-    @param[in] ranges  list of integers; interpreted as list of pairs of
+    @param[in] ranges  list of integers; interpreted as list of m_Pairs of
                        inclusive lower and upper bound, respectively
 
     @pre The passed list @a ranges must have 2, 4, or 6 elements; that is,
-         1, 2, or 3 pairs. This precondition is enforced by an assertion.
+         1, 2, or 3 m_Pairs. This precondition is enforced by an assertion.
 
     @return true if and only if no range violation was detected
     */
@@ -9826,7 +9826,7 @@ class binary_reader
             case 0x9F: // array (indefinite length)
                 return get_cbor_array(static_cast<std::size_t>(-1), tag_handler);
 
-            // map (0x00..0x17 pairs of data items follow)
+            // map (0x00..0x17 m_Pairs of data items follow)
             case 0xA0:
             case 0xA1:
             case 0xA2:
@@ -20262,7 +20262,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
 
         if (is_an_object)
         {
-            // the initializer list is a list of pairs -> create object
+            // the initializer list is a list of m_Pairs -> create object
             m_data.m_type = value_t::object;
             m_data.m_value = value_t::object;
 

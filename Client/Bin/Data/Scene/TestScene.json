@@ -4,8 +4,8 @@
             "name": "MainCamera",
             "active": true,
             "transform": {
-                "position": [ 0.0, 5.0, -10.0 ],
-                "rotation": [ 15.0, 0.0, 0.0 ],
+                "position": [ 0.0, 8.0, -15.0 ],
+                "rotation": [ 20.0, 0.0, 0.0 ],
                 "scale":    [ 1.0, 1.0, 1.0 ]
             },
             "components": [
@@ -33,7 +33,7 @@
                     "type":      "LightComponent",
                     "lightType": "Directional",
                     "color":     [ 1.0, 1.0, 1.0 ],
-                    "direction": [ 0.5, -1.0, 0.5 ],
+                    "direction": [ 0.3, -1.0, 0.5 ],
                     "position":  [ 0.0,  0.0, 0.0 ],
                     "intensity": 1.0,
                     "range":     0.0,
@@ -43,10 +43,38 @@
             ]
         },
         {
-            "name": "Dice",
+            "name": "Ground",
             "active": true,
             "transform": {
                 "position": [ 0.0, 0.0, 0.0 ],
+                "rotation": [ 0.0, 0.0, 0.0 ],
+                "scale":    [ 1.0, 1.0, 1.0 ]
+            },
+            "components": [
+                {
+                    "type": "RigidBodyComponent",
+                    "bodyType": "Static",
+                    "mass": 0.0,
+                    "restitution": 0.3,
+                    "friction": 0.5,
+                    "linearDamping": 0.0,
+                    "angularDamping": 0.0,
+                    "collider": {
+                        "shape": "Plane",
+                        "normal": [ 0.0, 1.0, 0.0 ],
+                        "dist": 0.0,
+                        "isTrigger": false,
+                        "layer": 0,
+                        "layerMask": 4294967295
+                    }
+                }
+            ]
+        },
+        {
+            "name": "FallingSphere",
+            "active": true,
+            "transform": {
+                "position": [ 0.0, 5.0, 0.0 ],
                 "rotation": [ 0.0, 0.0, 0.0 ],
                 "scale":    [ 1.0, 1.0, 1.0 ]
             },
@@ -56,6 +84,55 @@
                     "modelKey":  "Dice",
                     "modelPath": "Bin/Resource/Model/Dice.mymesh",
                     "layer":     "Opaque"
+                },
+                {
+                    "type": "RigidBodyComponent",
+                    "bodyType": "Dynamic",
+                    "mass": 1.0,
+                    "restitution": 0.5,
+                    "friction": 0.5,
+                    "linearDamping": 0.01,
+                    "angularDamping": 0.05,
+                    "collider": {
+                        "shape": "Sphere",
+                        "radius": 0.5,
+                        "isTrigger": false,
+                        "layer": 0,
+                        "layerMask": 4294967295
+                    }
+                }
+            ]
+        },
+        {
+            "name": "FallingBox",
+            "active": true,
+            "transform": {
+                "position": [ 2.0, 8.0, 0.0 ],
+                "rotation": [ 15.0, 30.0, 0.0 ],
+                "scale":    [ 1.0, 1.0, 1.0 ]
+            },
+            "components": [
+                {
+                    "type":      "ModelComponent",
+                    "modelKey":  "Dice",
+                    "modelPath": "Bin/Resource/Model/Dice.mymesh",
+                    "layer":     "Opaque"
+                },
+                {
+                    "type": "RigidBodyComponent",
+                    "bodyType": "Dynamic",
+                    "mass": 2.0,
+                    "restitution": 0.3,
+                    "friction": 0.7,
+                    "linearDamping": 0.01,
+                    "angularDamping": 0.05,
+                    "collider": {
+                        "shape": "Box",
+                        "halfExtents": [ 0.5, 0.5, 0.5 ],
+                        "isTrigger": false,
+                        "layer": 0,
+                        "layerMask": 4294967295
+                    }
                 }
             ]
         }

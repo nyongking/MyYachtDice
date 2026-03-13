@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhysicsLib - 3D 리지드바디 물리 엔진 레퍼런스</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #1c2333;
+  --bg-card: #21262d;
+  --bg-code: #0d1117;
+  --border: #30363d;
+  --border-bright: #484f58;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #656d76;
+  --accent-blue: #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green: #3fb950;
+  --accent-orange: #d29922;
+  --accent-red: #f85149;
+  --accent-cyan: #76e3ea;
+  --accent-pink: #f778ba;
+  --star-color: #e3b341;
+  --sidebar-width: 280px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  display: flex;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  top: 0; left: 0;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  padding: 24px 0;
+}
+
+.sidebar-header {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.sidebar-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  margin-bottom: 4px;
+}
+
+.sidebar-header .subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.nav-group { margin-bottom: 8px; }
+
+.nav-group-title {
+  padding: 6px 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+}
+
+.nav-link {
+  display: block;
+  padding: 5px 20px 5px 28px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(88, 166, 255, 0.06);
+  border-left-color: var(--accent-blue);
+}
+
+.nav-link .nav-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 6px;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.badge-math { background: rgba(188, 140, 255, 0.15); color: var(--accent-purple); }
+.badge-core { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+.badge-collision { background: rgba(247, 120, 186, 0.15); color: var(--accent-pink); }
+.badge-solver { background: rgba(210, 153, 34, 0.15); color: var(--accent-orange); }
+.badge-world { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+
+/* ── Main Content ── */
+.main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  max-width: 1100px;
+  padding: 40px 48px 80px;
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 48px;
+  background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 48px;
+}
+
+.hero h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero .desc {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  max-width: 700px;
+  margin-bottom: 20px;
+}
+
+.tech-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.tech-tag {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.tech-tag.highlight {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  background: rgba(88,166,255,0.08);
+}
+
+/* ── Section ── */
+.section { margin-bottom: 56px; }
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-primary);
+}
+
+.section-title .section-icon {
+  margin-right: 10px;
+  font-size: 1.3rem;
+}
+
+/* ── Class Card ── */
+.class-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 24px;
+  transition: border-color 0.2s;
+}
+
+.class-card:hover { border-color: var(--border-bright); }
+
+.class-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.class-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+}
+
+.class-badge {
+  font-size: 0.65rem;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-struct { background: rgba(188,140,255,0.15); color: var(--accent-purple); }
+.badge-class { background: rgba(63,185,80,0.15); color: var(--accent-green); }
+.badge-abstract { background: rgba(210,153,34,0.15); color: var(--accent-orange); }
+.badge-interface { background: rgba(88,166,255,0.15); color: var(--accent-blue); }
+.badge-enum { background: rgba(247,120,186,0.15); color: var(--accent-pink); }
+.badge-free { background: rgba(118,227,234,0.15); color: var(--accent-cyan); }
+
+.class-desc {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+/* ── Tables ── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  vertical-align: top;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+
+.data-table code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--accent-blue);
+  background: rgba(88,166,255,0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.data-table .type-col { color: var(--accent-purple); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+
+/* ── Method ── */
+.method-group h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.method {
+  padding: 12px 16px;
+  border-left: 3px solid var(--border);
+  margin-bottom: 10px;
+  border-radius: 0 8px 8px 0;
+  background: var(--bg-tertiary);
+  transition: border-color 0.2s;
+}
+
+.method:hover { border-left-color: var(--accent-blue); }
+
+.method.starred {
+  border-left-color: var(--star-color);
+  background: rgba(227, 179, 65, 0.04);
+}
+
+.method .star {
+  color: var(--star-color);
+  margin-right: 4px;
+  font-size: 0.9rem;
+}
+
+.method code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--accent-green);
+}
+
+.method p {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.method .precondition {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--accent-orange);
+}
+
+/* ── Code block ── */
+pre {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+pre code.hljs {
+  padding: 20px;
+  font-size: 0.82rem;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.6;
+  background: var(--bg-code) !important;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* ── Diagram ── */
+.diagram-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.diagram-container h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.mermaid {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Details ── */
+details {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+details summary {
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+details summary:hover { color: var(--text-primary); }
+
+details[open] summary { border-bottom: 1px solid var(--border); }
+
+/* ── Directory Tree ── */
+.dir-tree {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  overflow-x: auto;
+}
+
+.dir-tree ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.dir-tree ul ul {
+  padding-left: 24px;
+  border-left: 1px solid var(--border);
+  margin-left: 8px;
+}
+
+.dir-tree li {
+  position: relative;
+  padding: 3px 0;
+}
+
+.dir-tree ul ul > li::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 14px;
+  width: 18px;
+  height: 1px;
+  background: var(--border);
+}
+
+.dir-tree .item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.dir-tree .item-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.dir-tree .item-name { font-weight: 500; }
+.dir-tree .item-name.folder { color: var(--accent-blue); font-weight: 600; }
+.dir-tree .item-name.file-h { color: var(--accent-purple); }
+.dir-tree .item-name.file-cpp { color: var(--accent-green); }
+.dir-tree .item-name.file-pch { color: var(--accent-orange); }
+
+.dir-tree .item-desc {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-left: 4px;
+}
+
+.dir-tree .separator {
+  padding: 6px 0 2px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-family: 'Noto Sans KR', sans-serif;
+  border-top: 1px dashed var(--border);
+  margin-top: 6px;
+  padding-top: 10px;
+}
+
+/* ── Dep Table ── */
+.dep-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.dep-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.dep-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(48,54,61,0.4);
+}
+
+/* ── Info Box ── */
+.info-box {
+  background: rgba(88,166,255,0.06);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.info-box.warn {
+  background: rgba(210,153,34,0.06);
+  border-color: rgba(210,153,34,0.2);
+}
+
+.info-box strong { color: var(--text-primary); }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 24px 16px; }
+  .hero { padding: 28px; }
+  .hero h1 { font-size: 1.5rem; }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+/* ── Sub-section heading ── */
+.sub-heading {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 32px 0 16px;
+  color: var(--accent-purple);
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ Sidebar ════════ -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <h2>PhysicsLib</h2>
+    <div class="subtitle">3D Rigid Body Physics Engine</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">개요</div>
+    <a class="nav-link" href="#overview">프로젝트 개요</a>
+    <a class="nav-link" href="#architecture">아키텍처</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">수학 타입</div>
+    <a class="nav-link" href="#vec3">Vec3 <span class="nav-badge badge-math">Math</span></a>
+    <a class="nav-link" href="#quat">Quat <span class="nav-badge badge-math">Math</span></a>
+    <a class="nav-link" href="#mat3">Mat3 <span class="nav-badge badge-math">Math</span></a>
+    <a class="nav-link" href="#operation">Operation <span class="nav-badge badge-math">Math</span></a>
+    <a class="nav-link" href="#mynumbers">MyNumbers <span class="nav-badge badge-math">Math</span></a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">코어 물리</div>
+    <a class="nav-link" href="#rigidbody">RigidBody <span class="nav-badge badge-core">Core</span></a>
+    <a class="nav-link" href="#collider">Collider <span class="nav-badge badge-core">Core</span></a>
+    <a class="nav-link" href="#contact">Contact <span class="nav-badge badge-core">Core</span></a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">충돌 감지</div>
+    <a class="nav-link" href="#broadphase">BroadPhase <span class="nav-badge badge-collision">Detection</span></a>
+    <a class="nav-link" href="#narrowphase">NarrowPhase <span class="nav-badge badge-collision">Detection</span></a>
+    <a class="nav-link" href="#collision">Collision <span class="nav-badge badge-collision">Detection</span></a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">충돌 해결</div>
+    <a class="nav-link" href="#contactsolver">ContactSolver <span class="nav-badge badge-solver">Solver</span></a>
+    <a class="nav-link" href="#islandbuilder">IslandBuilder <span class="nav-badge badge-solver">Solver</span></a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">월드</div>
+    <a class="nav-link" href="#physicsworld">PhysicsWorld <span class="nav-badge badge-world">World</span></a>
+    <a class="nav-link" href="#ijobdispatcher">IJobDispatcher <span class="nav-badge badge-world">World</span></a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">다이어그램</div>
+    <a class="nav-link" href="#diagram-step">Step 실행 흐름</a>
+    <a class="nav-link" href="#diagram-class">클래스 구조</a>
+    <a class="nav-link" href="#diagram-collision">충돌 감지 흐름</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">부록</div>
+    <a class="nav-link" href="#dependencies">의존성</a>
+    <a class="nav-link" href="#directory">디렉토리 구조</a>
+  </div>
+</nav>
+
+<!-- ════════ Main Content ════════ -->
+<main class="main">
+
+<!-- ── Hero ── -->
+<section class="hero" id="overview">
+  <h1>PhysicsLib</h1>
+  <p class="desc">
+    외부 의존 없이 C++ 표준 라이브러리만으로 구현한 3D 리지드바디 물리 엔진.
+    Sphere, Box, Plane 충돌체를 지원하며, SAT(Separating Axis Theorem) 기반 충돌 감지와
+    Sequential Impulse + Baumgarte Stabilization 기반 충돌 해결을 제공한다.
+    Island 분리를 통한 병렬 솔빙과 IJobDispatcher 인터페이스를 통한 멀티스레드 확장이 가능하다.
+  </p>
+  <div class="tech-tags">
+    <span class="tech-tag highlight">C++17</span>
+    <span class="tech-tag highlight">Header-only Math</span>
+    <span class="tech-tag">Zero Dependencies</span>
+    <span class="tech-tag">Semi-implicit Euler</span>
+    <span class="tech-tag">SAT Collision</span>
+    <span class="tech-tag">Sequential Impulse</span>
+    <span class="tech-tag">Baumgarte Stabilization</span>
+    <span class="tech-tag">Island-based Parallel Solving</span>
+    <span class="tech-tag">Union-Find</span>
+    <span class="tech-tag">Trigger / Layer Mask</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 아키텍처 다이어그램 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="architecture">
+  <h2 class="section-title"><span class="section-icon">🏗️</span>아키텍처 개요</h2>
+
+  <div class="info-box">
+    PhysicsLib은 5개 계층으로 구성된다: <strong>수학 타입</strong>(Vec3, Quat, Mat3) →
+    <strong>물리 프리미티브</strong>(RigidBody, Collider, Contact) →
+    <strong>충돌 감지</strong>(BroadPhase, NarrowPhase) →
+    <strong>충돌 해결</strong>(IslandBuilder, ContactSolver) →
+    <strong>월드 오케스트레이터</strong>(PhysicsWorld).
+    모든 수학 연산은 인라인 함수로 제공되며, 외부 라이브러리 의존이 전혀 없다.
+  </div>
+
+  <div class="diagram-container">
+    <h4>라이브러리 계층 구조</h4>
+    <div class="mermaid">
+graph TD
+    PW["PhysicsWorld<br/><i>오케스트레이터</i>"]
+    BP["BroadPhase<br/><i>AABB 브루트포스</i>"]
+    NP["NarrowPhase<br/><i>정밀 충돌 테스트</i>"]
+    COL["Collision<br/><i>5가지 충돌 함수</i>"]
+    IB["IslandBuilder<br/><i>Union-Find 그래프</i>"]
+    CS["ContactSolver<br/><i>Sequential Impulse</i>"]
+    RB["RigidBody<br/><i>강체 동역학</i>"]
+    CLD["Collider<br/><i>Sphere / Box / Plane</i>"]
+    CT["Contact<br/><i>접촉 정보</i>"]
+    MATH["Vec3 / Quat / Mat3 / Operation<br/><i>수학 타입 &amp; 연산</i>"]
+    JD["IJobDispatcher<br/><i>병렬 처리 인터페이스</i>"]
+
+    PW --> BP
+    PW --> NP
+    PW --> IB
+    PW --> CS
+    PW --> RB
+    PW --> CLD
+    PW --> JD
+    BP --> CLD
+    NP --> COL
+    NP --> CT
+    COL --> CT
+    COL --> CLD
+    IB --> CT
+    IB --> RB
+    CS --> CT
+    CS --> RB
+    RB --> MATH
+    CLD --> MATH
+    CT --> MATH
+
+    style PW fill:#1a3a5c,stroke:#58a6ff,color:#e6edf3
+    style MATH fill:#2d1f4e,stroke:#bc8cff,color:#e6edf3
+    style CS fill:#3a2a0a,stroke:#d29922,color:#e6edf3
+    style IB fill:#3a2a0a,stroke:#d29922,color:#e6edf3
+    style BP fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style NP fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style COL fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 수학 타입 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="math-types">
+  <h2 class="section-title"><span class="section-icon">📐</span>수학 타입</h2>
+
+  <!-- Vec3 -->
+  <div class="class-card" id="vec3">
+    <div class="class-header">
+      <span class="class-name">Vec3</span>
+      <span class="class-badge badge-struct">Struct</span>
+      <span class="class-badge badge-math" style="background:rgba(188,140,255,0.15);color:var(--accent-purple);">Header-only</span>
+    </div>
+    <p class="class-desc">
+      3차원 벡터. <code>union</code>으로 <code>{x, y, z}</code>와 <code>float v[3]</code> 두 가지 접근 방식을 지원한다.
+      산술 연산자(+, -, *, /, 단항 -)와 복합 대입 연산자(+=, -=, *=, /=)를 모두 인라인으로 제공한다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>x, y, z</code></td><td class="type-col">float</td><td>각 축 성분</td></tr>
+        <tr><td><code>v[3]</code></td><td class="type-col">float[]</td><td>인덱스 접근용 배열 (union)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+      <div class="method">
+        <code>Vec3(float x, float y, float z)</code>
+        <p>성분별 초기화 생성자. 기본 생성자는 (0, 0, 0)으로 초기화.</p>
+      </div>
+      <div class="method">
+        <code>void MakeZero()</code>
+        <p>모든 성분을 0으로 리셋한다.</p>
+      </div>
+      <div class="method">
+        <code>Vec3 operator-() const</code>
+        <p>부호 반전 (단항 마이너스).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quat -->
+  <div class="class-card" id="quat">
+    <div class="class-header">
+      <span class="class-name">Quat</span>
+      <span class="class-badge badge-struct">Struct</span>
+    </div>
+    <p class="class-desc">
+      사원수(Quaternion). 3D 회전을 짐벌 락 없이 표현한다. 해밀턴 곱(operator*)과
+      스칼라 곱, 덧셈을 지원한다. 기본 생성자는 단위 사원수 (0, 0, 0, 1).
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>x, y, z</code></td><td class="type-col">float</td><td>허수부 (벡터 파트)</td></tr>
+        <tr><td><code>w</code></td><td class="type-col">float</td><td>실수부 (스칼라 파트)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>연산자</h4>
+      <div class="method">
+        <code>Quat operator*(const Quat&amp; rhs) const</code>
+        <p>해밀턴 곱. 두 회전의 합성.</p>
+      </div>
+      <div class="method">
+        <code>Quat operator*(float scalar) const</code>
+        <p>스칼라 곱. 각속도 적분 등에 사용.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mat3 -->
+  <div class="class-card" id="mat3">
+    <div class="class-header">
+      <span class="class-name">Mat3</span>
+      <span class="class-badge badge-struct">Struct</span>
+    </div>
+    <p class="class-desc">
+      3x3 행렬. <code>union</code>으로 <code>row0/row1/row2</code>(Vec3 행), <code>rows[3]</code>,
+      <code>m[3][3]</code> 세 가지 접근을 지원한다. 관성 텐서의 월드 변환에 핵심적으로 사용된다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>row0, row1, row2</code></td><td class="type-col">Vec3</td><td>행 벡터 접근</td></tr>
+        <tr><td><code>rows[3]</code></td><td class="type-col">Vec3[]</td><td>행 벡터 배열 접근</td></tr>
+        <tr><td><code>m[3][3]</code></td><td class="type-col">float[][]</td><td>요소별 접근</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+      <div class="method">
+        <code>Mat3 operator*(const Mat3&amp; rhs) const</code>
+        <p>행렬-행렬 곱.</p>
+      </div>
+      <div class="method">
+        <code>Vec3 operator*(const Vec3&amp; v) const</code>
+        <p>행렬-벡터 곱 (v를 열벡터로 취급). 관성 텐서 적용에 사용.</p>
+      </div>
+      <div class="method">
+        <code>void MakeIdentity()</code>
+        <p>단위 행렬로 설정.</p>
+      </div>
+      <div class="method">
+        <code>void MakeZero()</code>
+        <p>영행렬로 설정.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operation (Free Functions) -->
+  <div class="class-card" id="operation">
+    <div class="class-header">
+      <span class="class-name">Operation.h</span>
+      <span class="class-badge badge-free">Free Functions</span>
+    </div>
+    <p class="class-desc">
+      Vec3, Quat, Mat3에 대한 수학 유틸리티 인라인 함수 모음.
+      모든 함수가 <code>inline</code>으로 정의되어 헤더만 포함하면 사용 가능하다.
+    </p>
+
+    <div class="method-group">
+      <h4>Vec3 연산</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>float Vec3Dot(const Vec3&amp; a, const Vec3&amp; b)</code>
+        <p>내적. 투영, 유효질량 계산 등 물리 전반에서 사용.</p>
+      </div>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>Vec3 Vec3Cross(const Vec3&amp; a, const Vec3&amp; b)</code>
+        <p>외적. 토크 계산, 접촉점 속도 계산의 핵심.</p>
+      </div>
+      <div class="method">
+        <code>float Vec3Length(const Vec3&amp; v)</code>
+        <p>벡터 길이 (L2 노름).</p>
+      </div>
+      <div class="method">
+        <code>float Vec3LengthSq(const Vec3&amp; v)</code>
+        <p>벡터 길이의 제곱. 비교 목적 시 sqrt 회피용.</p>
+      </div>
+      <div class="method">
+        <code>Vec3 Vec3Normalize(const Vec3&amp; v)</code>
+        <p>단위 벡터 반환. 길이 0이면 영벡터 반환.</p>
+      </div>
+      <div class="method">
+        <code>Vec3 Vec3Lerp(const Vec3&amp; a, const Vec3&amp; b, float t)</code>
+        <p>선형 보간. a + (b - a) * t.</p>
+      </div>
+    </div>
+
+    <div class="method-group">
+      <h4>Quat 연산</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>Quat QuatFromAxisAngle(const Vec3&amp; axis, float angle)</code>
+        <p>축-각도로부터 사원수 생성. angle은 라디안.</p>
+      </div>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>Vec3 QuatRotateVec3(const Quat&amp; q, const Vec3&amp; v)</code>
+        <p>사원수로 벡터 회전. q * v * q<sup>*</sup> (샌드위치 곱).</p>
+      </div>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>Mat3 QuatToMat3(const Quat&amp; q)</code>
+        <p>사원수를 3x3 회전 행렬로 변환. 월드 관성 텐서 계산에 핵심.</p>
+      </div>
+      <div class="method">
+        <code>Quat QuatConjugate(const Quat&amp; q)</code>
+        <p>켤레 사원수 (-x, -y, -z, w). 단위 사원수의 역원과 동일.</p>
+      </div>
+      <div class="method">
+        <code>Quat QuatNormalize(const Quat&amp; q)</code>
+        <p>사원수 정규화. 길이 &lt; 1e-8이면 단위 사원수 반환.</p>
+      </div>
+      <div class="method">
+        <code>Quat QuatSlerp(Quat a, Quat b, float t)</code>
+        <p>구면 선형 보간. dot &gt; 0.999이면 선형 보간으로 폴백.</p>
+      </div>
+      <div class="method">
+        <code>Quat QuatFromEuler(float pitchDeg, float yawDeg, float rollDeg)</code>
+        <p>오일러 각도(도)에서 사원수 생성. 적용 순서: Y * X * Z.</p>
+      </div>
+    </div>
+
+    <div class="method-group">
+      <h4>Mat3 연산</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>Mat3 Mat3Inverse(const Mat3&amp; m)</code>
+        <p>3x3 역행렬. 여인수(cofactor) 방식. det ≈ 0이면 assert 실패.</p>
+      </div>
+      <div class="method">
+        <code>Mat3 Mat3Transpose(const Mat3&amp; m)</code>
+        <p>전치 행렬. 회전 행렬의 전치 = 역행렬 성질 활용.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MyNumbers -->
+  <div class="class-card" id="mynumbers">
+    <div class="class-header">
+      <span class="class-name">MyNumbers.h</span>
+      <span class="class-badge badge-free">Constants</span>
+    </div>
+    <p class="class-desc">
+      물리 연산 전반에서 사용하는 상수 매크로 정의.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>매크로</th><th>값</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>FLOAT__MAX</code></td><td class="type-col">3.402823466e+38F</td><td>float 최대값</td></tr>
+        <tr><td><code>FLOAT__MIN</code></td><td class="type-col">1.175494351e-38F</td><td>float 최소 양수값</td></tr>
+        <tr><td><code>TO__RADIAN</code></td><td class="type-col">0.01745329F</td><td>도 → 라디안 변환 계수 (π/180)</td></tr>
+        <tr><td><code>TO__DEGREE</code></td><td class="type-col">57.2957796F</td><td>라디안 → 도 변환 계수 (180/π)</td></tr>
+        <tr><td><code>AXIS__X / Y / Z</code></td><td class="type-col">Vec3</td><td>표준 축 단위벡터 (1,0,0) / (0,1,0) / (0,0,1)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 코어 물리 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="core-physics">
+  <h2 class="section-title"><span class="section-icon">⚙️</span>코어 물리</h2>
+
+  <!-- RigidBody -->
+  <div class="class-card" id="rigidbody">
+    <div class="class-header">
+      <span class="class-name">RigidBody</span>
+      <span class="class-badge badge-class">Class</span>
+      <span class="class-badge badge-core" style="background:rgba(63,185,80,0.15);color:var(--accent-green);">Core</span>
+    </div>
+    <p class="class-desc">
+      물리 시뮬레이션의 기본 단위. 위치, 회전(사원수), 선속도, 각속도, 역질량, 역관성 텐서를 보유하며,
+      매 Step마다 Semi-implicit Euler 적분을 통해 상태를 갱신한다.
+      <strong>Static</strong>(고정), <strong>Kinematic</strong>(외부 제어), <strong>Dynamic</strong>(물리 시뮬레이션) 세 가지 바디 타입을 지원한다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>기본값</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>bodyType</code></td><td class="type-col">BodyType</td><td>Static</td><td>Static / Kinematic / Dynamic</td></tr>
+        <tr><td><code>positionWorld</code></td><td class="type-col">Vec3</td><td>(0,0,0)</td><td>월드 좌표 위치</td></tr>
+        <tr><td><code>orientation</code></td><td class="type-col">Quat</td><td>(0,0,0,1)</td><td>회전 상태 (사원수)</td></tr>
+        <tr><td><code>linearVelocity</code></td><td class="type-col">Vec3</td><td>(0,0,0)</td><td>선속도</td></tr>
+        <tr><td><code>angularVelocity</code></td><td class="type-col">Vec3</td><td>(0,0,0)</td><td>각속도 (라디안/초)</td></tr>
+        <tr><td><code>invMass</code></td><td class="type-col">float</td><td>0</td><td>역질량 (1/m). 0이면 무한 질량 (Static)</td></tr>
+        <tr><td><code>invInertiaLocal</code></td><td class="type-col">Mat3</td><td>Zero</td><td>로컬 역관성 텐서</td></tr>
+        <tr><td><code>invInertiaWorld</code></td><td class="type-col">Mat3</td><td>Zero</td><td>월드 역관성 텐서 (매 프레임 갱신)</td></tr>
+        <tr><td><code>restitution</code></td><td class="type-col">float</td><td>0.5</td><td>반발 계수 (0=완전 비탄성, 1=완전 탄성)</td></tr>
+        <tr><td><code>friction</code></td><td class="type-col">float</td><td>0.5</td><td>마찰 계수</td></tr>
+        <tr><td><code>linearDamping</code></td><td class="type-col">float</td><td>0.01</td><td>선형 감쇠 (에너지 손실)</td></tr>
+        <tr><td><code>angularDamping</code></td><td class="type-col">float</td><td>0.01</td><td>각 감쇠</td></tr>
+        <tr><td><code>maxLinearSpeed</code></td><td class="type-col">float</td><td>50</td><td>선속도 클램프 상한 (폭발 방지)</td></tr>
+        <tr><td><code>maxAngularSpeed</code></td><td class="type-col">float</td><td>50</td><td>각속도 클램프 상한</td></tr>
+        <tr><td><code>forceAccum</code></td><td class="type-col">Vec3</td><td>(0,0,0)</td><td>누적 힘 (Step 종료 시 초기화)</td></tr>
+        <tr><td><code>torqueAccum</code></td><td class="type-col">Vec3</td><td>(0,0,0)</td><td>누적 토크 (Step 종료 시 초기화)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>핵심 메서드</h4>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void ApplyForce(const Vec3&amp; force)</code>
+        <p>질량 중심에 힘 적용. <code>forceAccum += force</code>. Step() 종료 시 자동 초기화.</p>
+      </div>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void ApplyForceAtPoint(const Vec3&amp; force, const Vec3&amp; point)</code>
+        <p>특정 월드 좌표 point에 힘 적용. 힘과 토크 모두 누적. <code>torque = cross(point - pos, force)</code>.</p>
+      </div>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void ApplyImpulseAtPoint(const Vec3&amp; impulse, const Vec3&amp; point)</code>
+        <p>충격량(J = F·dt)을 직접 적용. 선속도와 각속도를 <strong>즉시</strong> 변경한다. ContactSolver가 사용.</p>
+        <p class="precondition">⚠ 선속도: dv = J * invMass | 각속도: dω = I⁻¹ × cross(r, J)</p>
+      </div>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void IntegrateVelocity(float dt)</code>
+        <p>누적 힘/토크로부터 가속도를 계산하여 속도를 적분한다 (Semi-implicit Euler 전반부).
+        감쇠(damping) 적용: <code>v *= (1 - damping)^dt</code>. Dynamic 바디만 처리.</p>
+      </div>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void IntegratePosition(float dt)</code>
+        <p>속도로부터 위치와 회전을 갱신한다 (Semi-implicit Euler 후반부).
+        속도 클램프를 적용하여 폭발을 방지하고, 사원수를 정규화한다.</p>
+      </div>
+
+      <div class="method">
+        <code>Vec3 GetVelocityAtPoint(const Vec3&amp; point) const</code>
+        <p>특정 월드 좌표의 속도. <code>v_lin + cross(ω, point - pos)</code>.</p>
+      </div>
+
+      <div class="method">
+        <code>void UpdateWorldInertia()</code>
+        <p>현재 회전 상태로 월드 역관성 텐서 갱신. <code>I_world⁻¹ = R · I_local⁻¹ · R^T</code>.</p>
+      </div>
+
+      <div class="method">
+        <code>void ClearAccumulators()</code>
+        <p>forceAccum, torqueAccum을 영벡터로 리셋.</p>
+      </div>
+    </div>
+
+    <div class="method-group">
+      <h4>설정 메서드</h4>
+      <div class="method">
+        <code>void SetInitialPosition(const Vec3&amp; Pos)</code>
+        <p>최초 1회만 적용 (initPos 플래그). Kinematic은 항상 허용.</p>
+      </div>
+      <div class="method">
+        <code>void SetOrientation(float pitchDeg, float yawDeg, float rollDeg)</code>
+        <p>오일러 각도(도)로 회전 설정. 내부에서 QuatFromEuler 호출.</p>
+      </div>
+      <div class="method">
+        <code>void SetBodyType(BodyType type)</code>
+        <p>바디 타입 변경. Dynamic이 아니면 invMass = 0, invInertiaLocal = Zero.</p>
+      </div>
+      <div class="method">
+        <code>void SetMass(float mass)</code>
+        <p>Dynamic일 때만 적용. invMass = 1/mass. mass ≤ 0이면 invMass = 0.</p>
+      </div>
+      <div class="method">
+        <code>void SetInertia(const Mat3&amp; matInertia)</code>
+        <p>관성 텐서 설정. 내부에서 Mat3Inverse 후 UpdateWorldInertia 호출.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>IntegratePosition 구현 보기</summary>
+<pre><code class="language-cpp">void RigidBody::IntegratePosition(float dt)
+{
+    if (bodyType != BodyType::Dynamic)
+        return;
+
+    // 속도 클램프 — 과도한 충돌 반응으로 인한 폭발 방지
+    float linSpeedSq = Vec3LengthSq(linearVelocity);
+    if (linSpeedSq > maxLinearSpeed * maxLinearSpeed)
+        linearVelocity *= maxLinearSpeed / sqrtf(linSpeedSq);
+
+    float angSpeedSq = Vec3LengthSq(angularVelocity);
+    if (angSpeedSq > maxAngularSpeed * maxAngularSpeed)
+        angularVelocity *= maxAngularSpeed / sqrtf(angSpeedSq);
+
+    positionWorld += linearVelocity * dt;
+
+    orientation = QuatNormalize(
+        orientation + Quat(angularVelocity.x, angularVelocity.y,
+                           angularVelocity.z, 0.f)
+                    * orientation * 0.5f * dt);
+}</code></pre>
+    </details>
+  </div>
+
+  <!-- Collider -->
+  <div class="class-card" id="collider">
+    <div class="class-header">
+      <span class="class-name">Collider</span>
+      <span class="class-badge badge-struct">Struct</span>
+      <span class="class-badge badge-abstract">Abstract</span>
+    </div>
+    <p class="class-desc">
+      충돌체의 기반 구조체. <code>SphereCollider</code>, <code>BoxCollider</code>, <code>PlaneCollider</code> 3가지
+      파생 타입을 지원한다. RigidBody에 연결되지 않은 경우 staticPosition/staticOrientation을 사용한다.
+      레이어 마스크 기반 필터링과 트리거 모드를 지원한다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>기본값</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>type</code></td><td class="type-col">ColliderType</td><td>—</td><td>Sphere / Box / Plane (const)</td></tr>
+        <tr><td><code>isTrigger</code></td><td class="type-col">bool</td><td>false</td><td>true이면 물리 반응 없이 이벤트만 발생</td></tr>
+        <tr><td><code>layer</code></td><td class="type-col">unsigned int</td><td>1</td><td>이 충돌체의 레이어 번호</td></tr>
+        <tr><td><code>layerMask</code></td><td class="type-col">unsigned int</td><td>0xFFFFFFFF</td><td>충돌 허용 레이어 비트마스크</td></tr>
+        <tr><td><code>posOffset</code></td><td class="type-col">Vec3</td><td>(0,0,0)</td><td>RigidBody/static 기준 위치 오프셋</td></tr>
+        <tr><td><code>rotOffset</code></td><td class="type-col">Quat</td><td>identity</td><td>RigidBody/static 기준 회전 오프셋</td></tr>
+        <tr><td><code>body</code></td><td class="type-col">RigidBody*</td><td>nullptr</td><td>연결된 강체 (없으면 정적)</td></tr>
+        <tr><td><code>owner</code></td><td class="type-col">void*</td><td>nullptr</td><td>소유 객체 포인터 (GameEngine 연동용)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>virtual AABB GetAABB() const = 0</code>
+        <p>월드 공간 AABB 계산. BroadPhase에서 사용. 각 파생 타입이 구현.</p>
+      </div>
+      <div class="method">
+        <code>Vec3 GetWorldPosition() const</code>
+        <p>body 연결 시 body의 위치 + 회전된 오프셋, 아닐 경우 staticPosition + offset.</p>
+      </div>
+      <div class="method">
+        <code>Quat GetWorldOrientation() const</code>
+        <p>body 연결 시 body의 회전 * rotOffset, 아닐 경우 staticOrientation * rotOffset.</p>
+      </div>
+    </div>
+
+    <h4 class="sub-heading">파생 충돌체</h4>
+
+    <table class="data-table">
+      <thead><tr><th>타입</th><th>고유 멤버</th><th>AABB 계산</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>SphereCollider</code></td>
+          <td><code>float radius</code></td>
+          <td>center ± (radius, radius, radius)</td>
+        </tr>
+        <tr>
+          <td><code>BoxCollider</code></td>
+          <td><code>Vec3 halfExtents</code></td>
+          <td>회전 행렬 절대값으로 각 축 투영 합산</td>
+        </tr>
+        <tr>
+          <td><code>PlaneCollider</code></td>
+          <td><code>Vec3 normal</code>, <code>float dist</code></td>
+          <td>FLOAT__MAX 범위 (무한 평면)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="info-box">
+      <strong>AABB</strong> 구조체: <code>Vec3 Min</code>, <code>Vec3 Max</code>로 구성된 축 정렬 바운딩 박스.
+      BroadPhase의 겹침 테스트에 사용된다.
+    </div>
+
+    <div class="info-box">
+      <strong>ColliderPair</strong> 구조체: <code>Collider* colA</code>, <code>Collider* colB</code>.
+      BroadPhase가 생성하고 NarrowPhase가 소비한다.
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="class-card" id="contact">
+    <div class="class-header">
+      <span class="class-name">Contact</span>
+      <span class="class-badge badge-struct">Struct</span>
+    </div>
+    <p class="class-desc">
+      두 충돌체 간의 접촉 정보를 담는 데이터 구조체.
+      NarrowPhase가 생성하고, ContactSolver가 소비한다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>point</code></td><td class="type-col">Vec3</td><td>접촉점 (월드 좌표)</td></tr>
+        <tr><td><code>normal</code></td><td class="type-col">Vec3</td><td>접촉 법선 (bodyA → bodyB 방향)</td></tr>
+        <tr><td><code>depth</code></td><td class="type-col">float</td><td>관통 깊이 (양수 = 겹침)</td></tr>
+        <tr><td><code>colA / colB</code></td><td class="type-col">Collider*</td><td>관련 충돌체 포인터</td></tr>
+        <tr><td><code>bodyA / bodyB</code></td><td class="type-col">RigidBody*</td><td>관련 강체 포인터</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 충돌 감지 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="collision-detection">
+  <h2 class="section-title"><span class="section-icon">💥</span>충돌 감지</h2>
+
+  <!-- BroadPhase -->
+  <div class="class-card" id="broadphase">
+    <div class="class-header">
+      <span class="class-name">BroadPhase</span>
+      <span class="class-badge badge-class">Class</span>
+    </div>
+    <p class="class-desc">
+      AABB 기반 브루트포스 브로드페이즈. 모든 충돌체 쌍을 순회하며 3단계 필터링을 적용한다:
+      (1) 레이어 마스크 호환성, (2) Plane이면 무조건 통과, (3) AABB 겹침 테스트.
+      O(n²) 복잡도로 향후 공간 분할 자료구조로 교체 가능.
+    </p>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void GetPairsBruteForce(const vector&lt;Collider*&gt; colliders, vector&lt;ColliderPair&gt;&amp; out)</code>
+        <p>모든 충돌체 쌍을 검사하여 잠재적 충돌 쌍을 out에 추가한다.</p>
+      </div>
+    </div>
+
+    <div class="method-group">
+      <h4>내부 헬퍼 (private)</h4>
+      <div class="method">
+        <code>bool LayerCollide(Collider* a, Collider* b)</code>
+        <p>양방향 레이어 마스크 검사. <code>(1 &lt;&lt; a.layer) &amp; b.mask</code> AND <code>(1 &lt;&lt; b.layer) &amp; a.mask</code>.</p>
+      </div>
+      <div class="method">
+        <code>bool Overlaps(const AABB&amp; a, const AABB&amp; b)</code>
+        <p>3축 AABB 겹침 테스트. 각 축에서 min ≤ max 조건 확인.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NarrowPhase -->
+  <div class="class-card" id="narrowphase">
+    <div class="class-header">
+      <span class="class-name">NarrowPhase</span>
+      <span class="class-badge badge-class">Class</span>
+    </div>
+    <p class="class-desc">
+      BroadPhase가 걸러낸 ColliderPair에 대해 정밀 충돌 테스트를 수행한다.
+      타입 쌍에 따라 적절한 Collision 함수로 디스패치하며,
+      <code>isTrigger</code> 플래그에 따라 contacts 또는 triggers 벡터로 분류한다.
+    </p>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void TestPair(const ColliderPair&amp; pair, vector&lt;Contact&gt;&amp; contacts, vector&lt;Contact&gt;&amp; triggers)</code>
+        <p>충돌체 쌍의 타입을 정렬(Sphere &lt; Box &lt; Plane)한 뒤 매칭되는 Collision 함수를 호출.
+        결과 Contact에 colA/B, bodyA/B를 채워 넣는다.</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>타입 정렬 규칙</strong>: Sphere(0) &lt; Box(1) &lt; Plane(2) 순서로 정렬하여
+      항상 작은 타입이 a, 큰 타입이 b가 되도록 보장한다. 이를 통해 5가지 조합만 처리하면 된다.
+    </div>
+  </div>
+
+  <!-- Collision Functions -->
+  <div class="class-card" id="collision">
+    <div class="class-header">
+      <span class="class-name">Collision.h / .cpp</span>
+      <span class="class-badge badge-free">Free Functions</span>
+    </div>
+    <p class="class-desc">
+      5가지 충돌체 조합에 대한 정밀 충돌 감지 함수. 각 함수는 접촉 정보(점, 법선, 깊이)를
+      계산하여 Contact 벡터에 추가한다.
+    </p>
+
+    <div class="method-group">
+      <h4>충돌 함수</h4>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void SphereSphere(const SphereCollider* a, const SphereCollider* b, vector&lt;Contact&gt;&amp; out)</code>
+        <p>두 구의 중심 거리 &lt; 반지름 합이면 충돌. 최대 1개 Contact 생성.</p>
+      </div>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void SphereBox(const SphereCollider* a, const BoxCollider* b, vector&lt;Contact&gt;&amp; out)</code>
+        <p>구 중심을 박스 로컬 좌표로 변환 후 가장 가까운 점(closest point)을 클램핑으로 계산.
+        구 중심이 박스 내부에 있는 경우 최소 관통축(minimum penetration axis)을 별도 처리.</p>
+      </div>
+
+      <div class="method">
+        <code>void SpherePlane(const SphereCollider* a, const PlaneCollider* b, vector&lt;Contact&gt;&amp; out)</code>
+        <p>구 중심과 평면의 부호 거리(signed distance) 비교. depth = radius - signedDist.</p>
+      </div>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void BoxBox(const BoxCollider* a, const BoxCollider* b, vector&lt;Contact&gt;&amp; out)</code>
+        <p><strong>SAT(Separating Axis Theorem)</strong> 기반. 15축 테스트 (A축 3 + B축 3 + 교차축 9).
+        면-면/면-엣지 접촉과 엣지-엣지 접촉을 구분하여 접촉점 생성. 다중 Contact 가능.</p>
+      </div>
+
+      <div class="method">
+        <code>void BoxPlane(const BoxCollider* a, const PlaneCollider* b, vector&lt;Contact&gt;&amp; out)</code>
+        <p>박스 8개 꼭짓점 각각에 대해 평면 관통 검사. 관통된 꼭짓점마다 Contact 생성.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>BoxBox SAT 알고리즘 구현 보기</summary>
+<pre><code class="language-cpp">void BoxBox(const BoxCollider* a, const BoxCollider* b, std::vector&lt;Contact&gt;&amp; out)
+{
+    Vec3 posA = a->GetWorldPosition();
+    Vec3 posB = b->GetWorldPosition();
+    Vec3 halfA = a->halfExtents;
+    Vec3 halfB = b->halfExtents;
+    Mat3 rotA = QuatToMat3(a->GetWorldOrientation());
+    Mat3 rotB = QuatToMat3(b->GetWorldOrientation());
+
+    Vec3 axisA[3] = { rotA.row0, rotA.row1, rotA.row2 };
+    Vec3 axisB[3] = { rotB.row0, rotB.row1, rotB.row2 };
+    Vec3 diff = posB - posA;
+
+    // 15축에 대한 SAT 테스트...
+    // A축 3개 (index 0~2) → B축 3개 (index 3~5) → 교차축 9개 (index 6~14)
+    // 각 축에서 overlap < 0 이면 즉시 return (분리축 발견)
+    // 최소 overlap 축이 접촉 법선
+
+    if (minAxisIndex < 6)  // 면-면 or 면-엣지 접촉
+    {
+        // 상대 박스 8 꼭짓점 중 면에 관통한 것이 접촉점
+    }
+    else  // 엣지-엣지 접촉
+    {
+        // 두 엣지의 최근접점 쌍 계산 → 중간점이 접촉점
+    }
+}</code></pre>
+    </details>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 충돌 해결 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="collision-resolution">
+  <h2 class="section-title"><span class="section-icon">🔧</span>충돌 해결</h2>
+
+  <!-- ContactSolver -->
+  <div class="class-card" id="contactsolver">
+    <div class="class-header">
+      <span class="class-name">ContactSolver</span>
+      <span class="class-badge badge-class">Class</span>
+      <span class="class-badge badge-solver" style="background:rgba(210,153,34,0.15);color:var(--accent-orange);">Solver</span>
+    </div>
+    <p class="class-desc">
+      <strong>Sequential Impulse</strong> 기반 접촉 해결기. Normal 방향(반발) + Tangent 방향(마찰)의
+      충격량을 반복 계산하여 속도를 보정한다. <strong>Baumgarte Stabilization</strong>으로 관통을 속도 바이어스로 보정하고,
+      <strong>Accumulated Impulse Clamping</strong>으로 수렴 안정성을 보장한다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>설정값</th><th>타입</th><th>기본값</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>iterations</code></td><td class="type-col">int</td><td>10</td><td>속도 해결 반복 횟수</td></tr>
+        <tr><td><code>beta</code></td><td class="type-col">float</td><td>0.2</td><td>Baumgarte 안정화 계수 (0.1 ~ 0.3)</td></tr>
+        <tr><td><code>slop</code></td><td class="type-col">float</td><td>0.005</td><td>관통 허용 오차 (지터 방지)</td></tr>
+      </tbody>
+    </table>
+
+    <h4 class="sub-heading">ContactConstraint (내부 구조체)</h4>
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>rA, rB</code></td><td class="type-col">Vec3</td><td>접촉점에서 각 바디 중심까지의 벡터</td></tr>
+        <tr><td><code>effectiveMassNormal</code></td><td class="type-col">float</td><td>법선 방향 유효질량 (1/K)</td></tr>
+        <tr><td><code>effectiveMassTangent</code></td><td class="type-col">float</td><td>접선 방향 유효질량</td></tr>
+        <tr><td><code>accumulatedImpulseN</code></td><td class="type-col">float</td><td>누적 법선 충격량 (≥ 0 클램핑)</td></tr>
+        <tr><td><code>accumulatedImpulseT</code></td><td class="type-col">float</td><td>누적 접선 충격량 (쿨롱 마찰 범위)</td></tr>
+        <tr><td><code>bias</code></td><td class="type-col">float</td><td>반발 + Baumgarte 위치 보정 바이어스</td></tr>
+        <tr><td><code>tangent</code></td><td class="type-col">Vec3</td><td>마찰 방향 (상대속도의 접선 성분)</td></tr>
+        <tr><td><code>mixedFriction</code></td><td class="type-col">float</td><td>기하 평균 마찰 계수: √(fA × fB)</td></tr>
+        <tr><td><code>mixedRestitution</code></td><td class="type-col">float</td><td>산술 평균 반발 계수: (eA + eB) / 2</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void Resolve(std::vector&lt;Contact&gt;&amp; contacts, float dt)</code>
+        <p>접촉 해결 진입점. Presolve → N회 ResolveVelocity 반복.</p>
+      </div>
+
+      <div class="method">
+        <code>void SetIteration(int n)</code>
+        <p>반복 횟수 설정.</p>
+      </div>
+    </div>
+
+    <div class="method-group">
+      <h4>내부 메서드 (private)</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void Presolve(std::vector&lt;Contact&gt;&amp; contacts, float dt)</code>
+        <p>각 접촉에 대해: (1) 유효질량(K) 계산, (2) Baumgarte 바이어스 계산,
+        (3) 접선 방향 결정, (4) 마찰/반발 혼합. 모든 constraint를 초기화.</p>
+      </div>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void ResolveVelocity()</code>
+        <p>모든 constraint를 순회하며: (1) 법선 충격량 계산 + 누적 클램핑(≥0),
+        (2) 접선 충격량 계산 + 쿨롱 마찰 클램핑(|λT| ≤ μ·λN). 각 충격량을 즉시 적용.</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>유효질량(Effective Mass) 공식</strong>:
+      K = m_A⁻¹ + m_B⁻¹ + dot(cross(I_A⁻¹ · cross(rA, n), rA), n)
+      + dot(cross(I_B⁻¹ · cross(rB, n), rB), n)
+      <br>effectiveMass = 1 / K
+    </div>
+
+    <div class="info-box warn">
+      <strong>Baumgarte Stabilization</strong>:
+      bias = restitution_bias - (β/dt) · max(depth - slop, 0).
+      slop은 미세 관통을 허용하여 지터(jitter)를 방지한다.
+    </div>
+
+    <details>
+      <summary>ResolveVelocity 구현 보기</summary>
+<pre><code class="language-cpp">void ContactSolver::ResolveVelocity()
+{
+    for (auto& cc : m_constraints)
+    {
+        RigidBody* a = cc.ct->bodyA;
+        RigidBody* b = cc.ct->bodyB;
+        const Vec3& normal = cc.ct->normal;
+
+        Vec3 vRel = b->GetVelocityAtPoint(cc.ct->point)
+                   - a->GetVelocityAtPoint(cc.ct->point);
+
+        // ── Normal impulse ──
+        float vN = Vec3Dot(vRel, normal);
+        float lambdaN = -(vN + cc.bias) * cc.effectiveMassNormal;
+
+        float oldN = cc.accumulatedImpulseN;
+        cc.accumulatedImpulseN = fmaxf(oldN + lambdaN, 0.f);  // clamp ≥ 0
+        lambdaN = cc.accumulatedImpulseN - oldN;
+
+        Vec3 impulseN = normal * lambdaN;
+        a->ApplyImpulseAtPoint(-impulseN, cc.ct->point);
+        b->ApplyImpulseAtPoint( impulseN, cc.ct->point);
+
+        // ── Tangent impulse (friction) ──
+        vRel = b->GetVelocityAtPoint(cc.ct->point)
+             - a->GetVelocityAtPoint(cc.ct->point);
+
+        float vT = Vec3Dot(vRel, cc.tangent);
+        float lambdaT = -vT * cc.effectiveMassTangent;
+
+        float limit = cc.mixedFriction * cc.accumulatedImpulseN;
+        float oldT = cc.accumulatedImpulseT;
+        cc.accumulatedImpulseT = clamp(oldT + lambdaT, -limit, limit);
+        lambdaT = cc.accumulatedImpulseT - oldT;
+
+        Vec3 impulseT = cc.tangent * lambdaT;
+        a->ApplyImpulseAtPoint(-impulseT, cc.ct->point);
+        b->ApplyImpulseAtPoint( impulseT, cc.ct->point);
+    }
+}</code></pre>
+    </details>
+  </div>
+
+  <!-- IslandBuilder -->
+  <div class="class-card" id="islandbuilder">
+    <div class="class-header">
+      <span class="class-name">IslandBuilder</span>
+      <span class="class-badge badge-class">Class</span>
+    </div>
+    <p class="class-desc">
+      <strong>Union-Find</strong>(경로 압축 + 랭크 최적화) 알고리즘으로 접촉 그래프를 연결 컴포넌트(Island)로 분리한다.
+      서로 독립적인 Island는 병렬로 솔빙할 수 있어, IJobDispatcher와 결합하여 성능을 개선한다.
+      Static-Static 쌍은 무시하며, Dynamic 바디만 Island에 포함된다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>내부 멤버</th><th>타입</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>m_parent</code></td><td class="type-col">vector&lt;int&gt;</td><td>Union-Find 부모 배열</td></tr>
+        <tr><td><code>m_rank</code></td><td class="type-col">vector&lt;int&gt;</td><td>Union-Find 랭크 배열</td></tr>
+        <tr><td><code>m_islands</code></td><td class="type-col">vector&lt;Island&gt;</td><td>분리된 Island 목록</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void Build(vector&lt;RigidBody*&gt;&amp; bodies, vector&lt;Contact&gt;&amp; contacts)</code>
+        <p>접촉 그래프에서 연결 컴포넌트를 추출. 각 Island에 관련 바디와 Contact 포인터를 배정.</p>
+      </div>
+      <div class="method">
+        <code>const vector&lt;Island&gt;&amp; GetIslands() const</code>
+        <p>Build 결과 Island 목록 반환.</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Island</strong> 구조체: <code>vector&lt;RigidBody*&gt; bodies</code> + <code>vector&lt;Contact*&gt; contacts</code>.
+      하나의 Island 내 바디들은 접촉을 통해 서로 연결되어 있으므로 반드시 함께 솔빙해야 한다.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: PhysicsWorld -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="world">
+  <h2 class="section-title"><span class="section-icon">🌍</span>월드</h2>
+
+  <div class="class-card" id="physicsworld">
+    <div class="class-header">
+      <span class="class-name">PhysicsWorld</span>
+      <span class="class-badge badge-class">Class</span>
+      <span class="class-badge badge-world" style="background:rgba(88,166,255,0.15);color:var(--accent-blue);">Orchestrator</span>
+    </div>
+    <p class="class-desc">
+      물리 시뮬레이션의 최상위 오케스트레이터. RigidBody와 Collider를 관리하며,
+      <code>Step(dt)</code> 한 번의 호출로 전체 물리 파이프라인을 실행한다.
+      IJobDispatcher를 통해 중력 적용, 적분, Island 솔빙을 병렬화할 수 있다.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>멤버</th><th>타입</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><code>m_bodies</code></td><td class="type-col">vector&lt;RigidBody*&gt;</td><td>등록된 강체 목록</td></tr>
+        <tr><td><code>m_colliders</code></td><td class="type-col">vector&lt;Collider*&gt;</td><td>등록된 충돌체 목록</td></tr>
+        <tr><td><code>m_pairs</code></td><td class="type-col">vector&lt;ColliderPair&gt;</td><td>BroadPhase 결과 (매 Step 재생성)</td></tr>
+        <tr><td><code>m_collisions</code></td><td class="type-col">vector&lt;Contact&gt;</td><td>물리 충돌 결과</td></tr>
+        <tr><td><code>m_triggers</code></td><td class="type-col">vector&lt;Contact&gt;</td><td>트리거 이벤트 결과</td></tr>
+        <tr><td><code>m_gravity</code></td><td class="type-col">Vec3</td><td>중력 (기본: 0, -9.81, 0)</td></tr>
+        <tr><td><code>m_dispatcher</code></td><td class="type-col">IJobDispatcher*</td><td>외부 병렬 디스패처 (null이면 싱글스레드)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-group">
+      <h4>핵심 메서드</h4>
+
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>void Step(float dt)</code>
+        <p>전체 물리 파이프라인 1프레임 실행 (아래 5단계 참조).</p>
+      </div>
+    </div>
+
+    <div class="method-group">
+      <h4>관리 메서드</h4>
+      <div class="method">
+        <code>void AddRigidBody(RigidBody* body)</code> / <code>RemoveRigidBody</code> / <code>ClearRigidBody</code>
+        <p>강체 등록/제거/전체 해제.</p>
+      </div>
+      <div class="method">
+        <code>void AddCollider(Collider* collider)</code> / <code>RemoveCollider</code> / <code>ClearColliders</code>
+        <p>충돌체 등록/제거/전체 해제.</p>
+      </div>
+      <div class="method">
+        <code>void SetDispatcher(IJobDispatcher* dispatcher)</code>
+        <p>병렬 처리 디스패처 설정. nullptr이면 내장 SingleThreadDispatcher 사용.</p>
+      </div>
+      <div class="method">
+        <code>const vector&lt;Contact&gt;&amp; GetCollisions() const</code>
+        <p>이번 Step의 물리 충돌 결과 조회.</p>
+      </div>
+      <div class="method">
+        <code>const vector&lt;Contact&gt;&amp; GetTriggers() const</code>
+        <p>이번 Step의 트리거 이벤트 조회.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>Step 구현 보기</summary>
+<pre><code class="language-cpp">void PhysicsWorld::Step(float dt)
+{
+    auto* dp = m_dispatcher ? m_dispatcher : &m_defaultDispatcher;
+
+    // Step 1: 중력 적용 + 속도 적분 (위치는 아직 갱신하지 않음)
+    dp->ParallelFor(0, (int)m_bodies.size(), [&](int i) {
+        RigidBody* body = m_bodies[i];
+        if (body->IsDynamic())
+            body->ApplyForce(m_gravity * (1.f / body->GetInvMass()));
+        body->IntegrateVelocity(dt);
+        body->UpdateWorldInertia();
+    });
+
+    m_pairs.clear();
+    m_collisions.clear();
+    m_triggers.clear();
+
+    // Step 2: 충돌 감지 (BroadPhase + NarrowPhase)
+    m_broadPhase.GetPairsBruteForce(m_colliders, m_pairs);
+    for (auto& pair : m_pairs)
+        m_narrowPhase.TestPair(pair, m_collisions, m_triggers);
+
+    // Step 3: Island 분리 + 병렬 접촉 해결
+    if (!m_collisions.empty()) {
+        m_islandBuilder.Build(bodyTemps, m_collisions);
+        const auto& islands = m_islandBuilder.GetIslands();
+
+        dp->ParallelFor(0, (int)islands.size(), [&](int i) {
+            ContactSolver solver;
+            solver.Resolve(islandContacts, dt);
+        });
+    }
+
+    // Step 4: 솔버가 보정한 속도로 위치/회전 갱신
+    dp->ParallelFor(0, (int)m_bodies.size(), [&](int i) {
+        m_bodies[i]->IntegratePosition(dt);
+    });
+
+    // Step 5: 어큐뮬레이터 클리어
+    dp->ParallelFor(0, (int)m_bodies.size(), [&](int i) {
+        m_bodies[i]->ClearAccumulators();
+    });
+}</code></pre>
+    </details>
+  </div>
+
+  <!-- IJobDispatcher -->
+  <div class="class-card" id="ijobdispatcher">
+    <div class="class-header">
+      <span class="class-name">IJobDispatcher</span>
+      <span class="class-badge badge-struct">Struct</span>
+      <span class="class-badge badge-interface">Interface</span>
+    </div>
+    <p class="class-desc">
+      병렬 처리 추상 인터페이스. PhysicsWorld는 이 인터페이스를 통해 중력 적용, 적분, Island 솔빙을
+      병렬화한다. GameEngine의 스레드 풀과 연결하여 사용할 수 있다.
+    </p>
+
+    <div class="method-group">
+      <h4>메서드</h4>
+      <div class="method starred">
+        <span class="star">⭐</span>
+        <code>virtual void ParallelFor(int start, int end, std::function&lt;void(int)&gt; body) = 0</code>
+        <p>[start, end) 범위를 병렬로 실행하는 순수 가상 함수.</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>SingleThreadDispatcher</strong>: 기본 제공되는 단순 구현체. 단순 for 루프로 순차 실행한다.
+      PhysicsWorld에 외부 디스패처를 설정하지 않으면 이것이 사용된다.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 다이어그램 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="diagrams">
+  <h2 class="section-title"><span class="section-icon">📊</span>상호작용 다이어그램</h2>
+
+  <div class="diagram-container" id="diagram-step">
+    <h4>PhysicsWorld::Step 실행 흐름</h4>
+    <div class="mermaid">
+graph TD
+    STEP["<b>PhysicsWorld::Step(dt)</b>"]
+    S1["<b>Step 1</b> — 힘 적용 + 속도 적분<br/><i>ParallelFor: ApplyForce(gravity)<br/>IntegrateVelocity(dt)<br/>UpdateWorldInertia()</i>"]
+    S2A["<b>Step 2a</b> — BroadPhase<br/><i>AABB 브루트포스<br/>Layer 마스크 필터</i>"]
+    S2B["<b>Step 2b</b> — NarrowPhase<br/><i>정밀 충돌 테스트<br/>Contact / Trigger 분류</i>"]
+    S3A["<b>Step 3a</b> — IslandBuilder<br/><i>Union-Find 그래프 분리</i>"]
+    S3B["<b>Step 3b</b> — ContactSolver<br/><i>ParallelFor: Island별<br/>Sequential Impulse ×N</i>"]
+    S4["<b>Step 4</b> — 위치 적분<br/><i>ParallelFor:<br/>IntegratePosition(dt)</i>"]
+    S5["<b>Step 5</b> — 클리어<br/><i>ParallelFor:<br/>ClearAccumulators()</i>"]
+
+    STEP --> S1
+    S1 --> S2A
+    S2A --> S2B
+    S2B --> S3A
+    S3A --> S3B
+    S3B --> S4
+    S4 --> S5
+
+    style STEP fill:#1a3a5c,stroke:#58a6ff,color:#e6edf3
+    style S1 fill:#1a2e1a,stroke:#3fb950,color:#e6edf3
+    style S2A fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style S2B fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style S3A fill:#3a2a0a,stroke:#d29922,color:#e6edf3
+    style S3B fill:#3a2a0a,stroke:#d29922,color:#e6edf3
+    style S4 fill:#1a2e1a,stroke:#3fb950,color:#e6edf3
+    style S5 fill:#1c2333,stroke:#8b949e,color:#e6edf3
+    </div>
+  </div>
+
+  <div class="diagram-container" id="diagram-class">
+    <h4>클래스 구조 다이어그램</h4>
+    <div class="mermaid">
+classDiagram
+    class PhysicsWorld {
+        -vector_RigidBodyPtr m_bodies
+        -vector_ColliderPtr m_colliders
+        -BroadPhase m_broadPhase
+        -NarrowPhase m_narrowPhase
+        -IslandBuilder m_islandBuilder
+        -IJobDispatcherPtr m_dispatcher
+        -Vec3 m_gravity
+        +Step(float dt) void
+        +AddRigidBody(body) void
+        +AddCollider(collider) void
+        +SetDispatcher(dispatcher) void
+        +GetCollisions() vector_Contact
+        +GetTriggers() vector_Contact
+    }
+
+    class RigidBody {
+        -BodyType bodyType
+        -Vec3 positionWorld
+        -Quat orientation
+        -Vec3 linearVelocity
+        -Vec3 angularVelocity
+        -float invMass
+        -Mat3 invInertiaWorld
+        +ApplyForce(Vec3) void
+        +ApplyForceAtPoint(Vec3, Vec3) void
+        +ApplyImpulseAtPoint(Vec3, Vec3) void
+        +IntegrateVelocity(float) void
+        +IntegratePosition(float) void
+        +UpdateWorldInertia() void
+        +GetVelocityAtPoint(Vec3) Vec3
+        +ClearAccumulators() void
+    }
+
+    class Collider {
+        &lt;&lt;abstract&gt;&gt;
+        +ColliderType type
+        +bool isTrigger
+        +uint layer
+        +uint layerMask
+        +RigidBodyPtr body
+        +GetAABB() AABB
+        +GetWorldPosition() Vec3
+        +GetWorldOrientation() Quat
+    }
+
+    class SphereCollider {
+        +float radius
+        +GetAABB() AABB
+    }
+
+    class BoxCollider {
+        +Vec3 halfExtents
+        +GetAABB() AABB
+    }
+
+    class PlaneCollider {
+        +Vec3 normal
+        +float dist
+        +GetAABB() AABB
+    }
+
+    class Contact {
+        +Vec3 point
+        +Vec3 normal
+        +float depth
+        +ColliderPtr colA
+        +ColliderPtr colB
+        +RigidBodyPtr bodyA
+        +RigidBodyPtr bodyB
+    }
+
+    class ContactSolver {
+        -int iterations
+        -float beta
+        -float slop
+        +Resolve(contacts, float) void
+        +SetIteration(int) void
+        -Presolve(contacts, float) void
+        -ResolveVelocity() void
+    }
+
+    class IslandBuilder {
+        -vector_int m_parent
+        -vector_int m_rank
+        -vector_Island m_islands
+        +Build(bodies, contacts) void
+        +GetIslands() vector_Island
+    }
+
+    class BroadPhase {
+        +GetPairsBruteForce(colliders, out) void
+        -LayerCollide(a, b) bool
+        -Overlaps(AABB, AABB) bool
+    }
+
+    class NarrowPhase {
+        +TestPair(pair, contacts, triggers) void
+    }
+
+    class IJobDispatcher {
+        &lt;&lt;interface&gt;&gt;
+        +ParallelFor(int, int, fn) void
+    }
+
+    Collider <|-- SphereCollider
+    Collider <|-- BoxCollider
+    Collider <|-- PlaneCollider
+    PhysicsWorld --> BroadPhase : uses
+    PhysicsWorld --> NarrowPhase : uses
+    PhysicsWorld --> IslandBuilder : uses
+    PhysicsWorld --> ContactSolver : creates per island
+    PhysicsWorld ..> IJobDispatcher : dispatches
+    PhysicsWorld o-- RigidBody : manages
+    PhysicsWorld o-- Collider : manages
+    Collider --> RigidBody : body
+    Contact --> Collider : colA colB
+    Contact --> RigidBody : bodyA bodyB
+    ContactSolver --> Contact : resolves
+    IslandBuilder --> RigidBody : groups
+    IslandBuilder --> Contact : partitions
+    NarrowPhase --> Contact : generates
+    BroadPhase --> Collider : filters
+    </div>
+  </div>
+
+  <div class="diagram-container" id="diagram-collision">
+    <h4>충돌 감지 디스패치 흐름</h4>
+    <div class="mermaid">
+graph TD
+    START["NarrowPhase::TestPair"]
+    SORT["타입 정렬<br/><i>Sphere(0) &lt; Box(1) &lt; Plane(2)</i>"]
+
+    SS["SphereSphere<br/><i>중심 거리 비교</i>"]
+    SB["SphereBox<br/><i>Closest Point + Clamp</i>"]
+    SP["SpherePlane<br/><i>Signed Distance</i>"]
+    BB["BoxBox<br/><i>SAT 15축 테스트</i>"]
+    BP_COL["BoxPlane<br/><i>8 꼭짓점 관통 검사</i>"]
+
+    TRIG{"isTrigger?"}
+    CT_OUT["contacts 벡터"]
+    TR_OUT["triggers 벡터"]
+
+    START --> SORT
+    SORT -->|"Sphere+Sphere"| SS
+    SORT -->|"Sphere+Box"| SB
+    SORT -->|"Sphere+Plane"| SP
+    SORT -->|"Box+Box"| BB
+    SORT -->|"Box+Plane"| BP_COL
+
+    SS --> TRIG
+    SB --> TRIG
+    SP --> TRIG
+    BB --> TRIG
+    BP_COL --> TRIG
+
+    TRIG -->|"No"| CT_OUT
+    TRIG -->|"Yes"| TR_OUT
+
+    style START fill:#1a3a5c,stroke:#58a6ff,color:#e6edf3
+    style SORT fill:#2d1f4e,stroke:#bc8cff,color:#e6edf3
+    style SS fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style SB fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style SP fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style BB fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style BP_COL fill:#3a1a2a,stroke:#f778ba,color:#e6edf3
+    style CT_OUT fill:#1a2e1a,stroke:#3fb950,color:#e6edf3
+    style TR_OUT fill:#3a2a0a,stroke:#d29922,color:#e6edf3
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 의존성 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="dependencies">
+  <h2 class="section-title"><span class="section-icon">📦</span>의존성</h2>
+
+  <table class="dep-table">
+    <thead><tr><th>의존성</th><th>유형</th><th>용도</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;cmath&gt;</code></td><td>C++ 표준 라이브러리</td><td>sqrtf, sinf, cosf, fabsf, powf, acosf, fmaxf, fminf</td></tr>
+      <tr><td><code>&lt;cstring&gt;</code></td><td>C++ 표준 라이브러리</td><td>memset, memcpy (Mat3 초기화/복사)</td></tr>
+      <tr><td><code>&lt;cassert&gt;</code></td><td>C++ 표준 라이브러리</td><td>Mat3Inverse 행렬식 0 검증</td></tr>
+      <tr><td><code>&lt;vector&gt;</code></td><td>C++ 표준 라이브러리</td><td>동적 배열 (Contact, Island, 관리 목록 전반)</td></tr>
+      <tr><td><code>&lt;functional&gt;</code></td><td>C++ 표준 라이브러리</td><td>std::function (IJobDispatcher ParallelFor 콜백)</td></tr>
+      <tr><td><code>&lt;unordered_map&gt;</code></td><td>C++ 표준 라이브러리</td><td>IslandBuilder의 바디 인덱스 해시 맵</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    외부 라이브러리 의존성이 <strong>전혀 없다</strong>. C++ 표준 라이브러리만으로 구성되어 있어
+    어떤 플랫폼이든 C++17 컴파일러만 있으면 빌드 가능하다.
+  </div>
+
+  <table class="dep-table" style="margin-top: 20px;">
+    <thead><tr><th>빌드 요건</th><th>값</th></tr></thead>
+    <tbody>
+      <tr><td>C++ 표준</td><td>C++17 이상</td></tr>
+      <tr><td>컴파일러</td><td>MSVC (Visual Studio 2022), GCC, Clang</td></tr>
+      <tr><td>플랫폼</td><td>Windows x64 (기본), 플랫폼 독립적 코드</td></tr>
+      <tr><td>프리컴파일 헤더</td><td>PhysicsPch.h (Vec3, Quat, Mat3, Operation, MyNumbers, IJobDispatcher 포함)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION: 디렉토리 구조 -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="directory">
+  <h2 class="section-title"><span class="section-icon">📁</span>디렉토리 구조</h2>
+
+  <div class="dir-tree">
+    <ul>
+      <li>
+        <span class="item">
+          <span class="item-icon">📂</span>
+          <span class="item-name folder">PhysicsLib/</span>
+        </span>
+        <ul>
+          <!-- PCH -->
+          <li>
+            <span class="item">
+              <span class="item-icon">⚙️</span>
+              <span class="item-name file-pch">PhysicsPch.h</span>
+              <span class="item-desc">프리컴파일 헤더 — 모든 수학 타입 + IJobDispatcher 포함</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">⚙️</span>
+              <span class="item-name file-pch">PhysicsPch.cpp</span>
+              <span class="item-desc">PCH 소스 (빈 파일)</span>
+            </span>
+          </li>
+
+          <!-- 수학 타입 -->
+          <li><div class="separator">수학 타입 — Header-only</div></li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📐</span>
+              <span class="item-name file-h">Vec3.h</span>
+              <span class="item-desc">3D 벡터 (union: {x,y,z} / v[3])</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📐</span>
+              <span class="item-name file-h">Quat.h</span>
+              <span class="item-desc">사원수 (해밀턴 곱, 스칼라 곱)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📐</span>
+              <span class="item-name file-h">Mat3.h</span>
+              <span class="item-desc">3x3 행렬 (union: rows / m[][])</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📐</span>
+              <span class="item-name file-h">Operation.h</span>
+              <span class="item-desc">인라인 수학 함수 (Dot, Cross, Normalize, QuatToMat3 등)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📐</span>
+              <span class="item-name file-h">MyNumbers.h</span>
+              <span class="item-desc">상수 매크로 (FLOAT__MAX, TO__RADIAN, AXIS__X/Y/Z)</span>
+            </span>
+          </li>
+
+          <!-- 코어 물리 -->
+          <li><div class="separator">코어 물리</div></li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📄</span>
+              <span class="item-name file-h">RigidBody.h</span>
+              <span class="item-desc">강체 클래스 선언 (BodyType, 적분, 충격량)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📄</span>
+              <span class="item-name file-cpp">RigidBody.cpp</span>
+              <span class="item-desc">강체 구현 (Semi-implicit Euler, 속도 클램프)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📄</span>
+              <span class="item-name file-h">Collider.h</span>
+              <span class="item-desc">충돌체 기반 + 파생 (Sphere, Box, Plane) + AABB</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📄</span>
+              <span class="item-name file-cpp">Collider.cpp</span>
+              <span class="item-desc">충돌체 구현 (AABB 계산, 월드 좌표 변환)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">📄</span>
+              <span class="item-name file-h">Contact.h</span>
+              <span class="item-desc">접촉 정보 구조체 (점, 법선, 깊이)</span>
+            </span>
+          </li>
+
+          <!-- 충돌 감지 -->
+          <li><div class="separator">충돌 감지</div></li>
+          <li>
+            <span class="item">
+              <span class="item-icon">💥</span>
+              <span class="item-name file-h">BroadPhase.h</span>
+              <span class="item-desc">브로드페이즈 선언 (AABB 브루트포스)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">💥</span>
+              <span class="item-name file-cpp">BroadPhase.cpp</span>
+              <span class="item-desc">브로드페이즈 구현 (레이어 필터 + AABB 겹침)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">💥</span>
+              <span class="item-name file-h">NarrowPhase.h</span>
+              <span class="item-desc">내로우페이즈 선언 (타입 디스패치)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">💥</span>
+              <span class="item-name file-cpp">NarrowPhase.cpp</span>
+              <span class="item-desc">내로우페이즈 구현 (타입 정렬 + Trigger 분류)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">💥</span>
+              <span class="item-name file-h">Collision.h</span>
+              <span class="item-desc">5가지 충돌 함수 선언</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">💥</span>
+              <span class="item-name file-cpp">Collision.cpp</span>
+              <span class="item-desc">충돌 함수 구현 (SAT, Closest Point 등)</span>
+            </span>
+          </li>
+
+          <!-- 충돌 해결 -->
+          <li><div class="separator">충돌 해결</div></li>
+          <li>
+            <span class="item">
+              <span class="item-icon">🔧</span>
+              <span class="item-name file-h">ContactSolver.h</span>
+              <span class="item-desc">Sequential Impulse 솔버 선언</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">🔧</span>
+              <span class="item-name file-cpp">ContactSolver.cpp</span>
+              <span class="item-desc">솔버 구현 (Baumgarte + 마찰 + 누적 클램핑)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">🔧</span>
+              <span class="item-name file-h">IslandBuilder.h</span>
+              <span class="item-desc">Union-Find Island 분리기 선언</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">🔧</span>
+              <span class="item-name file-cpp">IslandBuilder.cpp</span>
+              <span class="item-desc">Island 분리기 구현 (경로 압축 + 랭크 최적화)</span>
+            </span>
+          </li>
+
+          <!-- 월드 -->
+          <li><div class="separator">월드 오케스트레이터</div></li>
+          <li>
+            <span class="item">
+              <span class="item-icon">🌍</span>
+              <span class="item-name file-h">PhysicsWorld.h</span>
+              <span class="item-desc">물리 월드 선언 (5단계 Step 파이프라인)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">🌍</span>
+              <span class="item-name file-cpp">PhysicsWorld.cpp</span>
+              <span class="item-desc">물리 월드 구현 (병렬 Step, 관리 API)</span>
+            </span>
+          </li>
+          <li>
+            <span class="item">
+              <span class="item-icon">🔌</span>
+              <span class="item-name file-h">IJobDispatcher.h</span>
+              <span class="item-desc">병렬 처리 인터페이스 + SingleThreadDispatcher</span>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<script>
+  hljs.highlightAll();
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    flowchart: { curve: 'basis' },
+    themeVariables: {
+      darkMode: true,
+      background: '#161b22',
+      primaryColor: '#1a3a5c',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#58a6ff',
+      lineColor: '#484f58',
+      secondaryColor: '#21262d',
+      tertiaryColor: '#1c2333',
+      fontFamily: 'Noto Sans KR, sans-serif'
+    }
+  });
+</script>
+</body>
+</html>

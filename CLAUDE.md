@@ -13,11 +13,11 @@ msbuild RenderLib\RenderLib.vcxproj /p:Configuration=Debug /p:Platform=x64
 msbuild GameEngineLib\GameEngineLib.vcxproj /p:Configuration=Debug /p:Platform=x64
 ```
 
-**솔루션이 강제하는 컴파일 순서**: CoreLib → RenderLib → GameEngineLib → Client. ServerCoreLib은 독립적이며 현재 Client에 링크되지 않는다.
+**솔루션이 강제하는 컴파일 순서**: CoreLib → PhysicsLib → RenderLib → GameEngineLib → Client. ServerCoreLib은 독립적이며 현재 Client에 링크되지 않는다.
 
 **프리빌드 이벤트**: 각 프로젝트의 `UpdateLib.bat`이 `.lib` 파일을 `Client/Lib/`으로, 헤더를 `GameEngineLib/Inc/`로 복사한다. 저장소 경로에 한글(`바탕 화면`)이 포함되어 있어 일부 셸에서 `xcopy`가 실패할 수 있다 — 이 경우 bash `cp` 명령으로 직접 복사한다.
 
-- `GameEngineLib/Inc/` — CoreLib·RenderLib 헤더 복사본 보관. **원본 수정 금지, 각 라이브러리 원본을 편집할 것.**
+- `GameEngineLib/Inc/` — CoreLib·RenderLib·PhysicsLib 헤더 복사본 보관. **원본 수정 금지, 각 라이브러리 원본을 편집할 것.**
 - `Client/Inc/` — assimp 헤더만 포함. 엔진 헤더 복사본 없음.
 
 자동화 테스트는 없다.
@@ -26,13 +26,14 @@ msbuild GameEngineLib\GameEngineLib.vcxproj /p:Configuration=Debug /p:Platform=x
 
 ## 아키텍처
 
-커스텀 DirectX 11 Deferred Shading 렌더링 엔진을 포함하는 4계층 C++ 게임 프로젝트다.
+커스텀 DirectX 11 Deferred Shading 렌더링 엔진과 자체 물리 엔진을 포함하는 5계층 C++ 게임 프로젝트다.
 
 | 라이브러리 | 네임스페이스 | 역할 |
 |-----------|-------------|------|
-| `CoreLib` | `Core` | 메모리 풀, 스레드 관리, 잡 큐, 동기화 프리미티브 |
+| `CoreLib` | `Core` | 메모리 풀, 스레드 관리, 잡 큐, 동기화 프리미티브, 병렬 처리 |
+| `PhysicsLib` | — (글로벌) | 3D 리지드바디 물리 엔진 (충돌 감지/해결, Island 병렬 솔빙) |
 | `RenderLib` | `Render` | DirectX 11 Deferred Shading 렌더링 파이프라인 |
-| `GameEngineLib` | `GameEngine` | Scene/GameObject/Component 프레임워크, 리소스 매니저, QPC 타이머 |
+| `GameEngineLib` | `GameEngine` | Scene/GameObject/Component 프레임워크, 리소스 매니저, 물리 통합, QPC 타이머 |
 | `Client` | — | 게임 진입점, 구체적인 Scene·Component 구현체 |
 
 **타입 별칭** (`RenderLib/RenderTypes.h`): `float2/3/4/float4x4` = `DirectX::XMFLOAT*`, `_vector/_matrix` = `XMVECTOR/XMMATRIX`, `RefCom<T>` = `Microsoft::WRL::ComPtr<T>`. GameEngineLib PCH에서 이 헤더를 포함하므로 양 라이브러리 모두에서 사용 가능하다.
@@ -47,11 +48,81 @@ msbuild GameEngineLib\GameEngineLib.vcxproj /p:Configuration=Debug /p:Platform=x
 |------|-------------|
 | 메모리 | `Allocator`, `MemoryPool`, `ObjectPool` |
 | 스레딩 | `ThreadManager`, `JobQueue`, `ConcurrentJobQueue`, `MainThreadQueue` |
-| 동기화 | `Lock` (RW 락), `DeadLockProfiler`, `CoreTLS` |
-| 컨테이너 | `LockQueue`, `Container`, `JobQueueContainer` |
+| 동기화 | `Lock` (RW 락), `DeadLockProfiler`, `CoreTLS`, `SpinWait`, `EventSignal`, `CountdownEvent` |
+| 병렬 처리 | `ParallelFor`, `TaskGraph`, `Future` |
+| 컨테이너 | `LockQueue`, `Container`, `JobQueueContainer`, `ThreadSafeHashMap` |
 | 유틸리티 | `StringUtil`, `JsonUtil`, `ConsoleUtil`, `BufferReader`, `BufferWriter` |
 
 `MainThreadQueue`는 워커 스레드에서 디스패치된 지연 작업(GPU 리소스 생성 등)을 메인 스레드에서 소화하기 위해 `MainApp::Loop()`가 사용한다.
+
+---
+
+### PhysicsLib
+
+외부 의존성 없는 C++17 3D 리지드바디 물리 엔진. 헤더 온리 수학 타입과 충돌 감지/해결 파이프라인을 제공한다.
+
+#### 수학 타입 (헤더 온리)
+
+| 헤더 | 구조체 | 설명 |
+|------|--------|------|
+| `Vec3.h` | `Vec3` | `union { struct{x,y,z}; float v[3]; }`. 산술 연산자, `MakeZero()` |
+| `Quat.h` | `Quat` | `{x,y,z,w}` (기본값 `0,0,0,1`=단위). Hamilton 곱(`*`), 스칼라 곱 |
+| `Mat3.h` | `Mat3` | `union { struct{row0,row1,row2}; Vec3 rows[3]; float m[3][3]; }`. 행렬 곱, `MakeIdentity()`/`MakeZero()` |
+| `Operation.h` | — | 인라인 함수 모음: `Vec3Dot`, `Vec3Cross`, `Vec3Length`, `Vec3Normalize`, `Vec3Lerp`, `QuatFromAxisAngle`, `QuatRotateVec3`, `QuatToMat3`, `QuatConjugate`, `QuatNormalize`, `QuatSlerp`, `QuatFromEuler`, `Mat3Inverse`, `Mat3Transpose` 등 |
+| `MyNumbers.h` | — | 상수: `FLOAT__MAX`, `FLOAT__MIN`, `TO__RADIAN`, `TO__DEGREE`, `AXIS__X/Y/Z` |
+
+#### RigidBody
+
+`BodyType` enum: `Static`(질량 무한, 이동 불가), `Kinematic`(질량 무한, 외부 제어), `Dynamic`(물리 시뮬레이션).
+
+- **속성**: `position`, `orientation`(Quat), `velocity`, `angularVelocity`, `invMass`, `invInertiaLocal`(Mat3), `invInertiaWorld`(Mat3)
+- **재질**: `restitution`, `friction`, `linearDamping`, `angularDamping`, `maxLinearSpeed`, `maxAngularSpeed`
+- **힘 누적**: `forceAccum`, `torqueAccum` — `Step()` 후 자동 클리어
+- **적분**: Semi-implicit Euler. `IntegrateVelocity(dt)` → `IntegratePosition(dt)`. 속도 클램핑 적용.
+- **관성 텐서**: `UpdateWorldInertia()` — `R · I_local⁻¹ · R^T` 계산
+
+#### Collider 계층
+
+- **`Collider`** (베이스) — `type`(Sphere/Box/Plane), `isTrigger`, `layer`/`layerMask`(비트마스크), `positionOffset`/`rotationOffset`, `body*`, `owner*`(void). `GetWorldPosition()`/`GetWorldOrientation()`. `ComputeAABB()` 순수 가상.
+- **`SphereCollider`** — `radius`. AABB = center ± radius.
+- **`BoxCollider`** — `halfExtents`(Vec3). AABB = 회전된 8개 꼭짓점의 min/max.
+- **`PlaneCollider`** — `normal`, `distance`. AABB = 무한(BroadPhase에서 별도 처리).
+- **`ColliderPair`** — 충돌 쌍 (`Collider* a, b`).
+
+#### 충돌 감지
+
+- **`BroadPhase`** — `GetPairsBruteForce()`: 레이어 마스크 필터링 → Plane은 AABB 검사 건너뜀 → AABB 3축 오버랩 테스트. O(n²).
+- **`NarrowPhase`** — `TestPair()`: 타입 정렬(Sphere < Box < Plane) 후 디스패치. 트리거/접촉 분리.
+- **`Collision`** — 5개 충돌 함수:
+  - `SphereSphere`: 중심 거리 비교
+  - `SpherePlane`: 평면까지 부호 거리
+  - `SphereBox`: 최근접점 클램프 + 깊은 관통 처리
+  - `BoxBox`: SAT 15축(면법선 6 + 엣지 교차 9) + 면/엣지 접촉점 생성
+  - `BoxPlane`: 8개 꼭짓점 관통 테스트
+
+#### 충돌 해결
+
+- **`Contact`** — `point`, `normal`(A→B), `depth`, `colliderA/B`, `bodyA/B`
+- **`ContactSolver`** — Sequential Impulse 방식. `Resolve()` = `Presolve()` + N회 `ResolveVelocity()`.
+  - Baumgarte Stabilization: β=0.2, slop=0.005m
+  - 누적 충격량 클램핑 (Accumulated Impulse Clamping)
+  - Coulomb 마찰 (접선 충격량 ≤ μ × 법선 충격량)
+- **`IslandBuilder`** — Union-Find(경로 압축 + 랭크 최적화). 접촉 그래프에서 섬(Island) 구성. Static-Static 쌍 무시.
+
+#### PhysicsWorld — 시뮬레이션 루프
+
+```
+Step(dt):
+  1. IntegrateVelocity — 중력 적용 + 속도 적분 (Semi-implicit Euler)
+  2. BroadPhase + NarrowPhase — 충돌 감지, 트리거/접촉 분리
+  3. IslandBuilder + ContactSolver — 섬 구축 → 섬별 병렬 솔빙 (IJobDispatcher)
+  4. IntegratePosition — 위치/회전 적분
+  5. ClearAccumulators — 힘/토크 누적기 초기화
+```
+
+- **기본 중력**: `(0, -9.81, 0)`
+- **`IJobDispatcher`** — 병렬 처리 인터페이스. `ParallelFor(begin, end, func)`. 기본 구현 `SingleThreadDispatcher` 제공.
+- Body/Collider 관리: `AddBody()`/`RemoveBody()`, `AddCollider()`/`RemoveCollider()`
 
 ---
 
@@ -168,11 +239,11 @@ struct LightData {
 
 RenderLib 위에 구축된 Scene/GameObject/Component 프레임워크. 리소스 매니저 싱글톤을 소유한다.
 
-**싱글톤**: `SceneManager`, `GeometryManager`, `ShaderManager`, `MaterialManager`, `ModelManager`, `TextureManager`.
+**싱글톤**: `SceneManager`, `GeometryManager`, `ShaderManager`, `MaterialManager`, `ModelManager`, `TextureManager`, `PhysicsManager`.
 
 #### 초기화
 
-리소스 로딩 전에 반드시 `InitEngine()`(`EngineGlobal.cpp`)을 호출해야 한다. `ComponentRegistry`에 빌트인 컴포넌트(`CameraComponent`, `LightComponent`, `ModelComponent`, `QuadComponent`)를 등록한다.
+리소스 로딩 전에 반드시 `InitEngine()`(`EngineGlobal.cpp`)을 호출해야 한다. `ComponentRegistry`에 빌트인 컴포넌트(`CameraComponent`, `LightComponent`, `ModelComponent`, `QuadComponent`, `RigidBodyComponent`)를 등록하고, `PhysicsManager`를 초기화한다. 전역 변수 `GPhysicsManager`, `GDebugDrawColliders`, `GDebugWireframeMaterial`이 `EngineGlobal.h`에 선언되어 있다.
 
 #### Scene / GameObject / Component
 
@@ -197,6 +268,18 @@ RenderLib 위에 구축된 Scene/GameObject/Component 프레임워크. 리소스
 #### 카메라
 
 - **`CameraComponent`** (Component 상속) — `SetPerspective()` / `SetOrthographic()`. 팔로우 카메라 지원(`SetFollowTarget()`, `SetSmoothSpeed()`). `LateUpdate()`에서 뷰/프로젝션 갱신. `GetViewProj()` / `GetView()` / `GetProj()` / `GetInverseView()`. JSON `isMainCamera` 플래그.
+
+#### 물리 통합
+
+- **`PhysicsManager`** — `PhysicsWorld` 래퍼 싱글톤. 고정 타임스텝 60Hz 누적기(`fixedDt=1/60`, `maxAccumulator=0.2`). `Update(dt)`에서 누적 후 `PhysicsWorld::Step()` 반복 호출.
+- **`RigidBodyComponent`** (Component 상속) — `RigidBody` + `Collider` 소유. Transform ↔ RigidBody 동기화: Dynamic은 body→transform, Kinematic은 transform→body. `Awake()`에서 `PhysicsWorld`에 등록, `OnDestroy()`에서 해제.
+  - Collider 설정: `SetColliderType(Sphere/Box/Plane)`, `SetColliderRadius()`, `SetColliderHalfExtents()`. 형상+질량으로 관성 텐서 자동 계산.
+  - JSON 직렬화: bodyType, mass, restitution, friction, damping, collider 정보 저장/로드.
+  - 디버그 와이어프레임: `LateUpdate()`에서 `GDebugDrawColliders` 활성화 시 `DebugGeometry` + `WireframeMaterial`로 콜라이더 시각화.
+  - `#ifdef TOOL` Inspector: ImGui로 물리 속성 편집.
+- **`PhysicsConvert`** (`PhysicsConvert.h`) — PhysicsLib ↔ GameEngine 타입 변환. `ToPhysics(float3)↔ToEngine(Vec3)`, `EulerToPhysicsQuat(float3)↔PhysicsQuatToEuler(Quat)` (DirectXMath 경유).
+- **`DebugGeometry`** (`DebugGeometry.h/.cpp`) — `WireBox`, `WireSphere`, `WirePlane` 지오메트리 클래스. `VTXPOSCOL` 버텍스.
+- **`WireframeMaterial`** (`WireframeMaterial.h`) — 와이어프레임 디버그 렌더링용 미니멀 머티리얼. `VSWIREFRAME.hlsl`/`PSWIREFRAME.hlsl` 사용.
 
 #### GameEngineLib 내 빌트인 머티리얼
 
@@ -253,3 +336,6 @@ Tool에서 `.fbx` → `.mymesh` 변환. 바이너리 포맷:
 - **라이트 시스템** — `LightComponent`, `LightData`(Directional/Point/Spot), `DeferredLightingMaterial`.
 - **씬 직렬화** — JSON 기반 Scene/GameObject/Component 저장·로드. `ComponentRegistry` 팩토리.
 - **Tool 에디터** — ImGui/ImGuizmo UI, `EditorScene`, Inspector.
+- **물리 엔진 (PhysicsLib)** — 3D 리지드바디 물리: 충돌 감지(BroadPhase AABB + NarrowPhase SAT), Sequential Impulse 솔버, Island 병렬 솔빙, Baumgarte 안정화.
+- **물리 엔진 통합 (GameEngineLib)** — `PhysicsManager`(60Hz 고정 타임스텝), `RigidBodyComponent`(Transform 동기화, 콜라이더, JSON 직렬화, 디버그 와이어프레임).
+- **CoreLib 병렬 처리** — `ParallelFor`, `TaskGraph`, `Future`, `CountdownEvent`, `EventSignal`, `SpinWait`, `ThreadSafeHashMap` 추가.

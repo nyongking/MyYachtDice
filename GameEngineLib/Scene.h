@@ -10,7 +10,8 @@ namespace GameEngine
 		virtual ~Scene() = default;
 
 		virtual void Awake() {}
-		virtual void Start()  {}
+		virtual void Start();
+
 
 		virtual void Update(float dt);
 		virtual void LateUpdate(float dt);

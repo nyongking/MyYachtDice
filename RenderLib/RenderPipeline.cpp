@@ -78,7 +78,8 @@ namespace Render
 		// 4. UI
 		m_passes[static_cast<int>(RenderPassBase::Layer::UI)]->Execute(ctx);
 
-		// 5. Effect
+		// 5. Effect — depth 클리어 후 실행 (LightingPass 풀스크린이 z=0 기록하므로)
+		Renderer::GetInstance().ClearDepth(ctx);
 		m_passes[static_cast<int>(RenderPassBase::Layer::Effect)]->Execute(ctx);
 	}
 

@@ -34,9 +34,9 @@ namespace GameEngine
 		MyJson      Serialize()              const override;
 		void        Deserialize(const MyJson& j)   override;
 
-#ifdef TOOL
 		void OnInspectorGUI() override
 		{
+#ifdef TOOL
 			// Eye / Target
 			if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen))
 			{
@@ -73,8 +73,8 @@ namespace GameEngine
 				if (changed)
 					SetOrthographic(m_orthoWidth, m_orthoHeight, m_nearZ, m_farZ);
 			}
-		}
 #endif
+		}
 
 	private:
 		Render::ViewProjMatrix m_matrix;

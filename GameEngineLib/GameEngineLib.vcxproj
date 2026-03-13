@@ -176,6 +176,11 @@ call UpdateLib.bat
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="RenderComponent.h" />
+    <ClInclude Include="PhysicsManager.h" />
+    <ClInclude Include="PhysicsConvert.h" />
+    <ClInclude Include="RigidBodyComponent.h" />
+    <ClInclude Include="WireframeMaterial.h" />
+    <ClInclude Include="DebugGeometry.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CameraComponent.cpp" />
@@ -204,6 +209,9 @@ call UpdateLib.bat
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
+    <ClCompile Include="PhysicsManager.cpp" />
+    <ClCompile Include="RigidBodyComponent.cpp" />
+    <ClCompile Include="DebugGeometry.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

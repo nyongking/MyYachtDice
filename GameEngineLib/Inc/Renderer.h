@@ -28,6 +28,9 @@ namespace Render
 		// G-Buffer Pass 이후 백버퍼 RTV 복귀 (클리어 없음)
 		void BindBackbuffer(ID3D11DeviceContext* ctx);
 
+		// Depth buffer만 클리어 (Effect 패스 전 호출)
+		void ClearDepth(ID3D11DeviceContext* ctx);
+
 	private:
 		RefCom<ID3D11Device> m_device = nullptr;
 		RefCom<ID3D11DeviceContext> m_context = nullptr;

@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreLib Phase 1 — 스레딩 시스템 확장 구현 상세</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0f0f1a;
+      --bg-main:    #1a1a2e;
+      --bg-card:    #16213e;
+      --bg-code:    #0d1117;
+      --bg-table:   #1e2240;
+
+      --accent-green:  #00e676;
+      --accent-blue:   #40c4ff;
+      --accent-orange: #ffab40;
+      --accent-purple: #ce93d8;
+      --accent-teal:   #64ffda;
+
+      --text-primary:  #e8eaf6;
+      --text-secondary:#9fa8da;
+      --text-muted:    #546e7a;
+      --text-code:     #80cbc4;
+
+      --border-subtle: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.18);
+
+      --phase1: #00e676;
+      --phase2: #40c4ff;
+      --phase3: #ffab40;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+
+      --font-sans: 'Segoe UI', 'Apple SD Gothic Neo', -apple-system, sans-serif;
+      --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+
+      --shadow-card: 0 4px 24px rgba(0,0,0,0.5);
+      --shadow-glow-green:  0 0 20px rgba(0,230,118,0.15);
+      --shadow-glow-blue:   0 0 20px rgba(64,196,255,0.15);
+      --shadow-glow-orange: 0 0 20px rgba(255,171,64,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a6a; }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .site-header {
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 60px 24px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 30% 50%, rgba(0,230,118,0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 70% 50%, rgba(64,196,255,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(0,230,118,0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(0,230,118,0.3);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      margin-bottom: 20px;
+    }
+
+    .site-header h1 {
+      font-size: clamp(22px, 4vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .site-header h1 span.hl {
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .header-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .header-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-meta .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      display: inline-block;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── TOC ──────────────────────────────────────────────────── */
+    .toc {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--accent-purple);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin: 40px 0 48px;
+    }
+
+    .toc h2 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-purple);
+      margin-bottom: 14px;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 6px 24px;
+    }
+
+    .toc li {
+      counter-increment: toc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .toc li::before {
+      content: counter(toc, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-purple);
+      opacity: 0.7;
+      min-width: 24px;
+    }
+
+    .toc a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .toc a:hover { color: var(--text-primary); }
+
+    /* ── Sections ─────────────────────────────────────────────── */
+    .section {
+      margin-bottom: 64px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-teal);
+      background: rgba(100,255,218,0.08);
+      border: 1px solid rgba(100,255,218,0.2);
+      border-radius: var(--radius-sm);
+      padding: 3px 10px;
+      letter-spacing: 1px;
+    }
+
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ── Sub-section header ───────────────────────────────────── */
+    .sub-section-header {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 36px 0 16px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent-blue);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sub-section-header .sub-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-blue);
+      background: rgba(64,196,255,0.08);
+      border: 1px solid rgba(64,196,255,0.2);
+      border-radius: var(--radius-sm);
+      padding: 2px 8px;
+    }
+
+    /* Method header */
+    .method-header {
+      margin: 28px 0 10px;
+    }
+
+    .method-name {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--accent-teal);
+      background: rgba(100,255,218,0.06);
+      border: 1px solid rgba(100,255,218,0.15);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .method-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.75;
+      padding-left: 4px;
+    }
+
+    .method-desc ul {
+      list-style: none;
+      margin-top: 6px;
+      padding-left: 12px;
+    }
+
+    .method-desc ul li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .method-desc ul li::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+    }
+
+    /* ── Cards ────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* ── Info card variants ───────────────────────────────────── */
+    .info-card {
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .info-card.green {
+      background: linear-gradient(135deg, rgba(0,230,118,0.05), var(--bg-card));
+      border: 1px solid rgba(0,230,118,0.2);
+    }
+
+    .info-card.blue {
+      background: linear-gradient(135deg, rgba(64,196,255,0.05), var(--bg-card));
+      border: 1px solid rgba(64,196,255,0.2);
+    }
+
+    .info-card.orange {
+      background: linear-gradient(135deg, rgba(255,171,64,0.05), var(--bg-card));
+      border: 1px solid rgba(255,171,64,0.2);
+    }
+
+    .info-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .info-card strong {
+      color: var(--text-primary);
+    }
+
+    /* ── Warning card ─────────────────────────────────────────── */
+    .warning-card {
+      background: linear-gradient(135deg, rgba(255,171,64,0.06), rgba(22,33,62,0.8));
+      border: 1px solid rgba(255,171,64,0.25);
+      border-left: 3px solid var(--accent-orange);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .warning-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent-orange);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .warning-card-body {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .warning-card-body strong {
+      color: var(--accent-orange);
+    }
+
+    /* ── Tables ───────────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead tr {
+      background: #1e2240;
+    }
+
+    thead th {
+      padding: 13px 18px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent-teal);
+      border-bottom: 1px solid var(--border-bright);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 12px 18px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    tbody td:first-child {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent-blue);
+      font-weight: 500;
+    }
+
+    .badge-new {
+      color: var(--accent-green);
+      font-weight: 600;
+      font-size: 12px;
+      background: rgba(0,230,118,0.08);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-radius: 10px;
+      padding: 2px 9px;
+    }
+
+    .badge-mod {
+      color: var(--accent-orange);
+      font-weight: 600;
+      font-size: 12px;
+      background: rgba(255,171,64,0.08);
+      border: 1px solid rgba(255,171,64,0.2);
+      border-radius: 10px;
+      padding: 2px 9px;
+    }
+
+    /* ── Code Blocks ──────────────────────────────────────────── */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 3px solid var(--accent-teal);
+      border-radius: var(--radius-sm);
+      padding: 20px 22px;
+      overflow-x: auto;
+      margin: 12px 0;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-code);
+      line-height: 1.75;
+    }
+
+    /* Inline code */
+    p code, li code, td code {
+      background: rgba(100,255,218,0.08);
+      border: 1px solid rgba(100,255,218,0.15);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12.5px;
+      color: var(--accent-teal);
+    }
+
+    /* Syntax highlighting (static) */
+    .kw  { color: #c792ea; }   /* keywords */
+    .tp  { color: #82aaff; }   /* types */
+    .fn  { color: #82aaff; }   /* functions */
+    .str { color: #c3e88d; }   /* strings */
+    .cmt { color: #546e7a; font-style: italic; } /* comments */
+    .num { color: #f78c6c; }   /* numbers */
+    .pp  { color: #89ddff; }   /* preprocessor / arrows */
+    .op  { color: #89ddff; }   /* operators */
+
+    /* ── Diagram / Flow Box ───────────────────────────────────── */
+    .diagram-box {
+      background: var(--bg-code);
+      border: 1px solid rgba(100,255,218,0.12);
+      border-radius: var(--radius-md);
+      padding: 22px 24px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    .diagram-box pre {
+      background: transparent;
+      border: none;
+      border-left: none;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .diagram-box code {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.9;
+    }
+
+    .diagram-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-teal);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* ── Relationship Diagram ─────────────────────────────────── */
+    .rel-diagram {
+      background: var(--bg-code);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── Feature pill list ───────────────────────────────────── */
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .feature-list li {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: var(--accent-green);
+      border: 1px solid rgba(0,230,118,0.3);
+      background: rgba(0,230,118,0.05);
+    }
+
+    .feature-list.blue li {
+      color: var(--accent-blue);
+      border-color: rgba(64,196,255,0.3);
+      background: rgba(64,196,255,0.05);
+    }
+
+    .feature-list.orange li {
+      color: var(--accent-orange);
+      border-color: rgba(255,171,64,0.3);
+      background: rgba(255,171,64,0.05);
+    }
+
+    /* ── Chunk visualizer ────────────────────────────────────── */
+    .chunk-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    @media (max-width: 600px) {
+      .chunk-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .chunk-cell {
+      background: rgba(64,196,255,0.05);
+      border: 1px solid rgba(64,196,255,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .chunk-cell-title {
+      color: var(--accent-blue);
+      font-weight: 700;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .chunk-cell-range {
+      color: var(--text-secondary);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .chunk-cell-worker {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .chunk-cell-signal {
+      color: var(--accent-green);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .chunk-merge {
+      margin: 4px 0 12px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .chunk-merge .arrow {
+      color: var(--accent-teal);
+      font-size: 18px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ── Dividers ─────────────────────────────────────────────── */
+    .sub-divider {
+      border: none;
+      border-top: 1px dashed var(--border-subtle);
+      margin: 30px 0;
+    }
+
+    /* ── Dependency graph ─────────────────────────────────────── */
+    .dep-graph {
+      background: var(--bg-code);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .dep-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .dep-node {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .dep-node.green {
+      color: var(--accent-green);
+      border-color: rgba(0,230,118,0.3);
+      background: rgba(0,230,118,0.06);
+    }
+
+    .dep-node.blue {
+      color: var(--accent-blue);
+      border-color: rgba(64,196,255,0.3);
+      background: rgba(64,196,255,0.06);
+    }
+
+    .dep-node.purple {
+      color: var(--accent-purple);
+      border-color: rgba(206,147,216,0.3);
+      background: rgba(206,147,216,0.06);
+    }
+
+    .dep-node.teal {
+      color: var(--accent-teal);
+      border-color: rgba(100,255,218,0.3);
+      background: rgba(100,255,218,0.06);
+    }
+
+    .dep-node.orange {
+      color: var(--accent-orange);
+      border-color: rgba(255,171,64,0.3);
+      background: rgba(255,171,64,0.06);
+    }
+
+    .dep-arrow {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-family: var(--font-mono);
+    }
+
+    .dep-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ── Utilities ────────────────────────────────────────────── */
+    .mt-sm { margin-top: 10px; }
+    .mt-md { margin-top: 20px; }
+    .mt-lg { margin-top: 36px; }
+    .mb-sm { margin-bottom: 10px; }
+    .mb-md { margin-bottom: 20px; }
+    .text-muted { color: var(--text-muted); font-size: 14px; }
+    .text-secondary { color: var(--text-secondary); font-size: 14px; line-height: 1.8; }
+
+    p.body-text {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 14px;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .site-footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-subtle);
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .site-footer span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-badge">Implementation Reference</div>
+  <h1><span class="hl">CoreLib Phase 1</span><br>스레딩 시스템 확장 구현 상세</h1>
+  <p class="header-subtitle">CountdownEvent &middot; Future/Promise &middot; ParallelFor &middot; JobQueue 확장</p>
+  <div class="header-meta">
+    <span><span class="dot"></span>MyYachtDice Engine</span>
+    <span><span class="dot"></span>C++17 · Windows API</span>
+    <span><span class="dot"></span>2026-03-11</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CONTAINER
+════════════════════════════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="목차">
+    <h2>목차</h2>
+    <ol>
+      <li><a href="#sec1">개요 및 파일 변경 요약</a></li>
+      <li><a href="#sec2">CountdownEvent</a></li>
+      <li><a href="#sec3">Future&lt;T&gt; / Promise&lt;T&gt;</a></li>
+      <li><a href="#sec4">ParallelFor</a></li>
+      <li><a href="#sec5">JobQueue 확장 — DoAsyncWithResult&lt;T&gt;</a></li>
+      <li><a href="#sec6">의존성 관계</a></li>
+      <li><a href="#sec7">주의사항 및 제약</a></li>
+    </ol>
+  </nav>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 1 — 개요
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec1">
+    <div class="section-header">
+      <span class="section-num">SECTION 01</span>
+      <h2>개요 및 파일 변경 요약</h2>
+    </div>
+
+    <div class="info-card green mb-md">
+      <p>
+        Phase 1에서는 CoreLib의 fire-and-forget 잡 시스템에 <strong>3가지 핵심 기능</strong>을 추가했습니다.
+        추가로 기존 JobQueue에 <code>DoAsyncWithResult&lt;T&gt;()</code> 메서드를 확장했습니다.
+      </p>
+    </div>
+
+    <div class="table-wrap mb-md">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>기능</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td style="color:var(--accent-green);font-weight:600;">CountdownEvent</td>
+            <td>다중 비동기 작업 완료 대기 (다른 기능의 전제조건)</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td style="color:var(--accent-green);font-weight:600;">Future&lt;T&gt; / Promise&lt;T&gt;</td>
+            <td>비동기 결과 반환 패턴</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td style="color:var(--accent-green);font-weight:600;">ParallelFor</td>
+            <td>병렬 배치 처리 유틸리티</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">1.1</span>
+      파일 변경 요약
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>파일</th>
+            <th>유형</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CoreLib/CountdownEvent.h</td>
+            <td><span class="badge-new">신규 (헤더 전용)</span></td>
+            <td>다중 작업 완료 대기 동기화 프리미티브</td>
+          </tr>
+          <tr>
+            <td>CoreLib/Future.h</td>
+            <td><span class="badge-new">신규 (헤더 전용)</span></td>
+            <td>SharedState&lt;T&gt;, Promise&lt;T&gt;, Future&lt;T&gt;, MakePromise&lt;T&gt;()</td>
+          </tr>
+          <tr>
+            <td>CoreLib/ParallelFor.h</td>
+            <td><span class="badge-new">신규</span></td>
+            <td>ParallelFor 선언</td>
+          </tr>
+          <tr>
+            <td>CoreLib/ParallelFor.cpp</td>
+            <td><span class="badge-new">신규</span></td>
+            <td>ParallelFor 구현</td>
+          </tr>
+          <tr>
+            <td>CoreLib/JobQueue.h</td>
+            <td><span class="badge-mod">수정</span></td>
+            <td>DoAsyncWithResult&lt;T&gt;() 메서드 추가</td>
+          </tr>
+          <tr>
+            <td>CoreLib/CoreLib.vcxproj</td>
+            <td><span class="badge-mod">수정</span></td>
+            <td>새 파일 등록</td>
+          </tr>
+          <tr>
+            <td>CoreLib/CoreLib.vcxproj.filters</td>
+            <td><span class="badge-mod">수정</span></td>
+            <td>Thread 필터에 배치</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 2 — CountdownEvent
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec2">
+    <div class="section-header">
+      <span class="section-num">SECTION 02</span>
+      <h2>CountdownEvent</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.1</span>
+      클래스 개요
+    </div>
+
+    <p class="body-text">
+      헤더 전용. Windows Event 기반의 다중 작업 완료 대기 동기화 프리미티브입니다.
+    </p>
+
+    <div class="info-card blue">
+      <p><strong>핵심 설계 원칙:</strong></p>
+      <ul style="list-style:none;margin-top:8px;padding-left:4px;">
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          <code>Atomic&lt;int32&gt;</code> 카운터로 잔여 작업 수 추적
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          Windows <code>CreateEvent</code> (manual-reset) 기반 OS 레벨 대기 — CPU를 양보하므로 스핀락보다 효율적
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          RAII: 소멸자에서 <code>CloseHandle</code> 자동 호출
+        </li>
+        <li style="color:var(--text-secondary);font-size:14px;padding-left:16px;position:relative;">
+          <span style="position:absolute;left:0;color:var(--accent-blue);">▸</span>
+          복사/이동 금지
+        </li>
+      </ul>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.2</span>
+      멤버 변수
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>멤버</th>
+            <th>타입</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>m_count</td>
+            <td style="color:var(--accent-purple);">Atomic&lt;int32&gt;</td>
+            <td>잔여 작업 카운터. Signal()마다 1 감소</td>
+          </tr>
+          <tr>
+            <td>m_event</td>
+            <td style="color:var(--accent-purple);">HANDLE</td>
+            <td>Windows manual-reset Event. 카운터 0 도달 시 신호</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.3</span>
+      API 상세
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">CountdownEvent(int32 count) — 생성자</div>
+      <div class="method-desc">
+        <ul>
+          <li>count로 카운터 초기화</li>
+          <li>count ≤ 0이면 처음부터 신호 상태(signaled)로 Event 생성</li>
+          <li><code>ASSERT_TRIG_CRASH</code>로 Event 생성 실패 시 크래시</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">~CountdownEvent() — 소멸자</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>CloseHandle(m_event)</code> 호출. RAII 패턴.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Signal()</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>m_count.fetch_sub(1)</code>로 원자적 감소</li>
+          <li>이전 값이 1이었으면 (즉 0으로 전환) <code>SetEvent(m_event)</code> 호출 → 대기 중인 스레드 깨움</li>
+          <li><strong>스레드 안전</strong>: lock-free (atomic 연산만 사용)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Wait()</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>m_count.load() &lt;= 0</code>이면 즉시 반환 (이미 완료)</li>
+          <li>그 외 <code>WaitForSingleObject(m_event, INFINITE)</code>로 블로킹 대기</li>
+          <li>OS 레벨 대기이므로 CPU 점유 없음</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool Wait(uint32 timeoutMs)</div>
+      <div class="method-desc">
+        <ul>
+          <li>타임아웃(밀리초) 지정 대기</li>
+          <li>반환값: <code>true</code> = 완료 (WAIT_OBJECT_0), <code>false</code> = 타임아웃</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool IsComplete() const</div>
+      <div class="method-desc">
+        <ul>
+          <li>논블로킹 완료 확인</li>
+          <li><code>m_count.load() &lt;= 0</code> 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void Reset(int32 count)</div>
+      <div class="method-desc">
+        <ul>
+          <li>이벤트 재사용. 새 count로 카운터 재설정</li>
+          <li>count &gt; 0: <code>ResetEvent</code> (비신호 상태)</li>
+          <li>count ≤ 0: <code>SetEvent</code> (신호 상태)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.4</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="cmt">// 5개 비동기 작업 완료 대기</span>
+<span class="tp">Core</span>::<span class="tp">CountdownEvent</span> event(<span class="num">5</span>);
+
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; ++i)
+{
+    jobQueue-&gt;<span class="fn">DoAsync</span>(<span class="kw">true</span>, [&amp;event]()
+    {
+        <span class="fn">DoHeavyWork</span>();
+        event.<span class="fn">Signal</span>();  <span class="cmt">// 완료 → 카운터 -1</span>
+    });
+}
+
+event.<span class="fn">Wait</span>();  <span class="cmt">// 카운터가 0이 될 때까지 블로킹 대기</span>
+<span class="cmt">// 여기 도달하면 5개 작업 모두 완료</span>
+
+<span class="cmt">// 재사용</span>
+event.<span class="fn">Reset</span>(<span class="num">3</span>);
+<span class="cmt">// ... 3개 추가 작업 제출 ...</span>
+event.<span class="fn">Wait</span>();</code></pre>
+
+    <div class="sub-section-header">
+      <span class="sub-num">2.5</span>
+      내부 동작 흐름
+    </div>
+
+    <div class="diagram-box">
+      <div class="diagram-title">CountdownEvent 동작 시퀀스 다이어그램</div>
+      <pre><code><span style="color:var(--accent-teal);">Thread A (호출자)</span>           <span style="color:var(--accent-blue);">Worker 1</span>          <span style="color:var(--accent-blue);">Worker 2</span>          <span style="color:var(--accent-blue);">Worker 3</span>
+     │                        │                 │                 │
+     ├─ <span style="color:var(--accent-green);">new CountdownEvent(3)</span> │                 │                 │
+     │   m_count = <span style="color:var(--num);">3</span>          │                 │                 │
+     │   m_event = <span style="color:var(--text-muted);">비신호</span>     │                 │                 │
+     │                        │                 │                 │
+     ├─ <span style="color:var(--accent-blue);">DoAsync(job1)</span> ────────→│                 │                 │
+     ├─ <span style="color:var(--accent-blue);">DoAsync(job2)</span> ─────────┼────────────────→│                 │
+     ├─ <span style="color:var(--accent-blue);">DoAsync(job3)</span> ─────────┼─────────────────┼────────────────→│
+     │                        │                 │                 │
+     ├─ <span style="color:var(--accent-orange);">Wait()</span>                │                 │                 │
+     │  <span style="color:var(--text-muted);">(OS 대기, CPU 양보)</span>   │                 │                 │
+     │                        ├─ <span style="color:var(--accent-green);">Signal()</span>       │                 │
+     │                        │  m_count: <span style="color:var(--num);">3</span>→<span style="color:var(--num);">2</span>   │                 │
+     │                        │                 ├─ <span style="color:var(--accent-green);">Signal()</span>       │
+     │                        │                 │  m_count: <span style="color:var(--num);">2</span>→<span style="color:var(--num);">1</span>   │
+     │                        │                 │                 ├─ <span style="color:var(--accent-green);">Signal()</span>
+     │                        │                 │                 │  m_count: <span style="color:var(--num);">1</span>→<span style="color:var(--num);">0</span>
+     │                        │                 │                 │  <span style="color:var(--accent-orange);">SetEvent!</span>
+     ├─ <span style="color:var(--accent-teal);">Wait() 반환</span> ←──────────┼─────────────────┼─────────────────┤
+     │  <span style="color:var(--accent-green);">(모두 완료)</span>           │                 │                 │</code></pre>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 3 — Future / Promise
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec3">
+    <div class="section-header">
+      <span class="section-num">SECTION 03</span>
+      <h2>Future&lt;T&gt; / Promise&lt;T&gt;</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.1</span>
+      아키텍처 개요
+    </div>
+
+    <p class="body-text">
+      3개 클래스 + 1개 팩토리 함수로 구성된 비동기 결과 반환 시스템입니다.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">클래스 관계도</div>
+      <pre><code><span style="color:var(--accent-teal);">MakePromise&lt;T&gt;()</span> ──→ <span style="color:var(--accent-blue);">SharedState&lt;T&gt;</span> (shared_ptr)
+                        ↗                    ↘
+               <span style="color:var(--accent-green);">Promise&lt;T&gt;</span>               <span style="color:var(--accent-orange);">Future&lt;T&gt;</span>
+              <span style="color:var(--text-muted);">(생산자 측)</span>              <span style="color:var(--text-muted);">(소비자 측)</span>
+              <span style="color:var(--accent-green);">SetValue()</span>               <span style="color:var(--accent-orange);">Get()</span>
+              <span style="color:var(--accent-green);">SetException()</span>           <span style="color:var(--accent-orange);">TryGet()</span>
+                                         <span style="color:var(--accent-orange);">Then()</span>
+                                         <span style="color:var(--accent-orange);">IsReady()</span></code></pre>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.2</span>
+      SharedState&lt;T&gt; — 내부 공유 상태
+    </div>
+
+    <p class="body-text">
+      Promise와 Future가 <code>shared_ptr</code>로 공유하는 내부 상태 구조체입니다.
+    </p>
+
+    <p style="font-weight:600;color:var(--text-primary);font-size:14px;margin-bottom:10px;">멤버 변수</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>멤버</th>
+            <th>타입</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>m_ready</td>
+            <td style="color:var(--accent-purple);">Atomic&lt;bool&gt;</td>
+            <td>결과 설정 완료 플래그</td>
+          </tr>
+          <tr>
+            <td>m_value</td>
+            <td style="color:var(--accent-purple);">T</td>
+            <td>결과 값 저장</td>
+          </tr>
+          <tr>
+            <td>m_exception</td>
+            <td style="color:var(--accent-purple);">std::exception_ptr</td>
+            <td>예외 저장 (실패 시)</td>
+          </tr>
+          <tr>
+            <td>m_continuation</td>
+            <td style="color:var(--accent-purple);">CallbackType</td>
+            <td>Then()으로 등록된 연속 콜백</td>
+          </tr>
+          <tr>
+            <td>m_event</td>
+            <td style="color:var(--accent-purple);">HANDLE</td>
+            <td>Windows Event. Get() 블로킹 대기용</td>
+          </tr>
+          <tr>
+            <td>m_locks[1]</td>
+            <td style="color:var(--accent-purple);">Lock</td>
+            <td><code>USE_LOCK</code> 매크로. continuation 등록 보호</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-weight:600;color:var(--text-primary);font-size:14px;margin: 20px 0 10px;">API 상세</p>
+
+    <div class="method-header">
+      <div class="method-name">void SetValue(T value) — 생산자 측에서 결과 설정</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>m_ready</code>가 이미 true이면 <code>ASSERT_TRIG_CRASH</code> (이중 설정 방지)</li>
+          <li><code>m_value</code>에 move 저장 → <code>m_ready = true</code> → <code>SetEvent</code> → continuation 콜백 실행(있으면)</li>
+          <li>continuation 접근은 <code>WRITE_LOCK</code>으로 보호</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void SetException(std::exception_ptr ex) — 예외 설정</div>
+      <div class="method-desc">
+        <ul>
+          <li>SetValue와 동일 흐름, 단 <code>m_exception</code>에 저장</li>
+          <li>소비자가 <code>Get()</code> 시 <code>std::rethrow_exception</code>으로 재전파</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">T&amp; Get() — 블로킹 대기 후 결과 반환</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>m_ready</code>가 false면 <code>WaitForSingleObject(INFINITE)</code> 대기</li>
+          <li>예외가 설정되어 있으면 <code>rethrow_exception</code></li>
+          <li>값 참조 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool TryGet(T&amp; out) — 논블로킹 시도</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>m_ready</code> false → <code>return false</code> (즉시)</li>
+          <li>예외 있으면 rethrow</li>
+          <li>값을 out에 복사 후 <code>return true</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">void SetContinuation(CallbackType cb) — 연속 콜백 등록</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>WRITE_LOCK</code> 내에서 ready 상태 확인</li>
+          <li>아직 미완료 → 콜백 저장 (나중에 SetValue/SetException에서 실행)</li>
+          <li>이미 완료 → 콜백 즉시 실행</li>
+          <li><strong>경쟁 조건 방지</strong>: Lock으로 "ready 확인 + 콜백 저장"을 원자적으로 수행</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-header">
+      <div class="method-name">bool IsReady() const</div>
+      <div class="method-desc">
+        <ul>
+          <li><code>m_ready.load()</code> 반환</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.3</span>
+      Future&lt;T&gt; — 소비자 측
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>메서드</th>
+            <th>반환</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Future()</td>
+            <td style="color:var(--text-muted);">—</td>
+            <td>기본 생성자 (빈 상태)</td>
+          </tr>
+          <tr>
+            <td>Future(Ref&lt;SharedState&lt;T&gt;&gt;)</td>
+            <td style="color:var(--text-muted);">—</td>
+            <td>SharedState 연결</td>
+          </tr>
+          <tr>
+            <td>bool IsReady()</td>
+            <td style="color:var(--accent-purple);">bool</td>
+            <td>결과 준비 여부. ASSERT: state 유효</td>
+          </tr>
+          <tr>
+            <td>T&amp; Get()</td>
+            <td style="color:var(--accent-purple);">T&amp;</td>
+            <td>블로킹 대기 → 결과 참조 반환. 예외 시 rethrow</td>
+          </tr>
+          <tr>
+            <td>bool TryGet(T&amp; out)</td>
+            <td style="color:var(--accent-purple);">bool</td>
+            <td>논블로킹 시도. true = 값 복사됨</td>
+          </tr>
+          <tr>
+            <td>void Then(CallbackType)</td>
+            <td style="color:var(--text-muted);">void</td>
+            <td>완료 시 실행할 콜백 등록</td>
+          </tr>
+          <tr>
+            <td>bool IsValid()</td>
+            <td style="color:var(--accent-purple);">bool</td>
+            <td>SharedState가 null이 아닌지</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.4</span>
+      Promise&lt;T&gt; — 생산자 측
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>메서드</th>
+            <th>반환</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Promise()</td>
+            <td style="color:var(--text-muted);">—</td>
+            <td>기본 생성자 (빈 상태)</td>
+          </tr>
+          <tr>
+            <td>Promise(Ref&lt;SharedState&lt;T&gt;&gt;)</td>
+            <td style="color:var(--text-muted);">—</td>
+            <td>SharedState 연결</td>
+          </tr>
+          <tr>
+            <td>void SetValue(T)</td>
+            <td style="color:var(--text-muted);">void</td>
+            <td>결과 설정. ASSERT: state 유효. 1회만 호출 가능</td>
+          </tr>
+          <tr>
+            <td>void SetException(exception_ptr)</td>
+            <td style="color:var(--text-muted);">void</td>
+            <td>예외 설정. ASSERT: state 유효. 1회만 호출 가능</td>
+          </tr>
+          <tr>
+            <td>bool IsValid()</td>
+            <td style="color:var(--accent-purple);">bool</td>
+            <td>SharedState가 null이 아닌지</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.5</span>
+      MakePromise&lt;T&gt;() — 팩토리 함수
+    </div>
+
+<pre><code><span class="kw">template</span>&lt;<span class="kw">typename</span> <span class="tp">T</span>&gt;
+std::pair&lt;<span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;, <span class="tp">Future</span>&lt;<span class="tp">T</span>&gt;&gt; <span class="fn">MakePromise</span>()
+{
+    <span class="kw">auto</span> state = std::make_shared&lt;<span class="tp">SharedState</span>&lt;<span class="tp">T</span>&gt;&gt;();
+    <span class="kw">return</span> { <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;(state), <span class="tp">Future</span>&lt;<span class="tp">T</span>&gt;(state) };
+}</code></pre>
+
+    <p class="body-text">
+      <code>SharedState&lt;T&gt;</code>를 생성하고 Promise/Future 쌍으로 반환합니다.
+      구조적 바인딩 사용 가능: <code>auto [promise, future] = MakePromise&lt;int&gt;();</code>
+    </p>
+
+    <div class="sub-section-header">
+      <span class="sub-num">3.6</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="cmt">// 기본 사용</span>
+<span class="kw">auto</span> [promise, future] = <span class="tp">Core</span>::<span class="fn">MakePromise</span>&lt;<span class="tp">int</span>&gt;();
+
+jobQueue-&gt;<span class="fn">DoAsync</span>(<span class="kw">true</span>, [p = std::move(promise)]() <span class="kw">mutable</span>
+{
+    <span class="tp">int</span> result = <span class="fn">HeavyComputation</span>();
+    p.<span class="fn">SetValue</span>(result);
+});
+
+<span class="cmt">// 나중에 결과 확인</span>
+<span class="kw">if</span> (future.<span class="fn">IsReady</span>())
+{
+    <span class="tp">int</span> value = future.<span class="fn">Get</span>();
+}
+
+<span class="cmt">// 또는 블로킹 대기</span>
+<span class="tp">int</span> value = future.<span class="fn">Get</span>();  <span class="cmt">// 완료될 때까지 대기</span>
+
+<span class="cmt">// 논블로킹 폴링</span>
+<span class="tp">int</span> value;
+<span class="kw">if</span> (future.<span class="fn">TryGet</span>(value))
+    <span class="fn">UseResult</span>(value);
+
+<span class="cmt">// 콜백 체이닝</span>
+future.<span class="fn">Then</span>([&amp;]()
+{
+    <span class="cmt">// future가 완료되면 자동 실행</span>
+    <span class="fn">ProcessResult</span>(future.<span class="fn">Get</span>());
+});
+
+<span class="cmt">// 예외 전파</span>
+<span class="kw">auto</span> [promise2, future2] = <span class="tp">Core</span>::<span class="fn">MakePromise</span>&lt;<span class="tp">Texture*</span>&gt;();
+jobQueue-&gt;<span class="fn">DoAsync</span>(<span class="kw">true</span>, [p = std::move(promise2)]() <span class="kw">mutable</span>
+{
+    <span class="kw">try</span> {
+        p.<span class="fn">SetValue</span>(<span class="fn">LoadTexture</span>(<span class="str">"path.dds"</span>));
+    } <span class="kw">catch</span> (...) {
+        p.<span class="fn">SetException</span>(std::current_exception());
+    }
+});
+
+<span class="kw">try</span> {
+    <span class="tp">Texture*</span> tex = future2.<span class="fn">Get</span>();
+} <span class="kw">catch</span> (<span class="kw">const</span> std::exception&amp; e) {
+    <span class="cmt">// 워커 스레드의 예외가 여기서 재전파</span>
+}</code></pre>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 4 — ParallelFor
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec4">
+    <div class="section-header">
+      <span class="section-num">SECTION 04</span>
+      <h2>ParallelFor</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.1</span>
+      함수 시그니처
+    </div>
+
+<pre><code><span class="cmt">// 자동 청크 크기 (하드웨어 코어 수 기반)</span>
+<span class="kw">void</span> <span class="fn">ParallelFor</span>(<span class="tp">int32</span> start, <span class="tp">int32</span> end, std::function&lt;<span class="kw">void</span>(<span class="tp">int32</span>)&gt; body);
+
+<span class="cmt">// 수동 청크 크기 지정</span>
+<span class="kw">void</span> <span class="fn">ParallelFor</span>(<span class="tp">int32</span> start, <span class="tp">int32</span> end, <span class="tp">int32</span> chunkSize, std::function&lt;<span class="kw">void</span>(<span class="tp">int32</span>)&gt; body);</code></pre>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.2</span>
+      내부 동작
+    </div>
+
+    <div class="card">
+      <p style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent-blue);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border-subtle);">자동 청크 크기 오버로드</p>
+      <ol style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(64,196,255,0.15);color:var(--accent-blue);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">1</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>totalCount = end - start</code> 계산. ≤ 0이면 즉시 반환</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(64,196,255,0.15);color:var(--accent-blue);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">2</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>std::thread::hardware_concurrency()</code>로 CPU 코어 수 획득</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(64,196,255,0.15);color:var(--accent-blue);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">3</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>chunkSize = (totalCount + workerCount - 1) / workerCount</code> (올림 나눗셈)</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(64,196,255,0.15);color:var(--accent-blue);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">4</span>
+          <span style="color:var(--text-secondary);font-size:14px;">수동 오버로드 호출</span>
+        </li>
+      </ol>
+
+      <p style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent-green);margin:20px 0 14px;padding-top:14px;border-top:1px dashed var(--border-subtle);">수동 청크 크기 오버로드</p>
+      <ol style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">1</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>totalCount ≤ 0</code> → 즉시 반환</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">2</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>chunkSize ≤ 0</code> → 1로 보정</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">3</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>totalCount ≤ chunkSize</code> → <strong style="color:var(--accent-green);">인라인 실행</strong> (스레드 오버헤드 제거). 단순 for 루프</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">4</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>chunkCount = (totalCount + chunkSize - 1) / chunkSize</code> 계산</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">5</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>CountdownEvent countdown(chunkCount)</code> 스택에 생성</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">6</span>
+          <div style="color:var(--text-secondary);font-size:14px;">
+            각 청크마다:
+            <ul style="list-style:none;margin-top:6px;padding-left:12px;">
+              <li style="padding-left:12px;position:relative;margin-bottom:3px;"><span style="position:absolute;left:0;color:var(--text-muted);">–</span> <code>chunkStart</code>, <code>chunkEnd</code> 계산 (마지막 청크는 end로 클램프)</li>
+              <li style="padding-left:12px;position:relative;margin-bottom:3px;"><span style="position:absolute;left:0;color:var(--text-muted);">–</span> <code>shared_ptr&lt;JobQueue&gt;</code> 생성</li>
+              <li style="padding-left:12px;position:relative;margin-bottom:3px;"><span style="position:absolute;left:0;color:var(--text-muted);">–</span> <code>DoAsync(pushOnly=true, ...)</code> 호출 — 내부적으로 <code>PushGlobalQueue</code> 자동 호출</li>
+              <li style="padding-left:12px;position:relative;"><span style="position:absolute;left:0;color:var(--text-muted);">–</span> 람다: <code>for (i = chunkStart; i &lt; chunkEnd; ++i) body(i);</code> 후 <code>countdown.Signal()</code></li>
+            </ul>
+          </div>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">7</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>countdown.Wait()</code> — 모든 청크 완료까지 블로킹 대기</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.3</span>
+      성능 특성
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>인라인 임계값</td>
+            <td>totalCount ≤ chunkSize일 때 직접 실행 (오버헤드 0)</td>
+          </tr>
+          <tr>
+            <td>청크 분할</td>
+            <td>CPU 코어 수 기반 자동 분할</td>
+          </tr>
+          <tr>
+            <td>대기 방식</td>
+            <td>CountdownEvent (OS Event) — CPU 양보</td>
+          </tr>
+          <tr>
+            <td>잡 제출</td>
+            <td>청크당 1개 JobQueue, PushGlobalQueue로 워커 풀에 분배</td>
+          </tr>
+          <tr>
+            <td>메모리</td>
+            <td>스택 기반 CountdownEvent + 힙 기반 JobQueue (shared_ptr)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.4</span>
+      청크 분할 시각화
+    </div>
+
+    <div class="info-card blue mb-md" style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">
+      <p style="margin-bottom:10px;"><strong style="color:var(--accent-blue);">ParallelFor(0, 100, body)</strong> — 코어 4개 가정, chunkSize = 25</p>
+      <div class="chunk-grid">
+        <div class="chunk-cell">
+          <div class="chunk-cell-title">Chunk 0</div>
+          <div class="chunk-cell-range">[0, 25)</div>
+          <div class="chunk-cell-worker">Worker A</div>
+          <div class="chunk-cell-signal">↓ Signal()</div>
+        </div>
+        <div class="chunk-cell">
+          <div class="chunk-cell-title">Chunk 1</div>
+          <div class="chunk-cell-range">[25, 50)</div>
+          <div class="chunk-cell-worker">Worker B</div>
+          <div class="chunk-cell-signal">↓ Signal()</div>
+        </div>
+        <div class="chunk-cell">
+          <div class="chunk-cell-title">Chunk 2</div>
+          <div class="chunk-cell-range">[50, 75)</div>
+          <div class="chunk-cell-worker">Worker C</div>
+          <div class="chunk-cell-signal">↓ Signal()</div>
+        </div>
+        <div class="chunk-cell">
+          <div class="chunk-cell-title">Chunk 3</div>
+          <div class="chunk-cell-range">[75, 100)</div>
+          <div class="chunk-cell-worker">Worker D</div>
+          <div class="chunk-cell-signal">↓ Signal()</div>
+        </div>
+      </div>
+      <div class="chunk-merge">
+        <span class="arrow" style="color:var(--accent-teal);">⬇</span>
+        <strong style="color:var(--accent-orange);">CountdownEvent(4)</strong>
+        <span style="display:block;margin-top:4px;">Wait() → 4번의 Signal() 완료 후 반환</span>
+      </div>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">4.5</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="cmt">// 기본: 자동 청크 분할</span>
+std::vector&lt;<span class="tp">RigidBody</span>&gt; bodies(<span class="num">1000</span>);
+<span class="tp">Core</span>::<span class="fn">ParallelFor</span>(<span class="num">0</span>, (<span class="tp">int32</span>)bodies.<span class="fn">size</span>(), [&amp;](<span class="tp">int32</span> i)
+{
+    bodies[i].<span class="fn">IntegrateForces</span>(dt);
+});
+
+<span class="cmt">// 수동 청크 크기</span>
+<span class="tp">Core</span>::<span class="fn">ParallelFor</span>(<span class="num">0</span>, (<span class="tp">int32</span>)particles.<span class="fn">size</span>(), <span class="num">64</span>, [&amp;](<span class="tp">int32</span> i)
+{
+    particles[i].<span class="fn">Update</span>(dt);
+});
+
+<span class="cmt">// 작은 범위 → 자동 인라인 (스레드 오버헤드 없음)</span>
+<span class="tp">Core</span>::<span class="fn">ParallelFor</span>(<span class="num">0</span>, <span class="num">3</span>, [&amp;](<span class="tp">int32</span> i)
+{
+    <span class="cmt">// 3개면 청크 분할 없이 직접 실행</span>
+    smallArray[i].<span class="fn">Process</span>();
+});</code></pre>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 5 — JobQueue 확장
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec5">
+    <div class="section-header">
+      <span class="section-num">SECTION 05</span>
+      <h2>JobQueue 확장 — DoAsyncWithResult&lt;T&gt;()</h2>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.1</span>
+      추가된 메서드
+    </div>
+
+<pre><code><span class="kw">template</span>&lt;<span class="kw">typename</span> <span class="tp">T</span>&gt;
+<span class="tp">Core</span>::<span class="tp">Future</span>&lt;<span class="tp">T</span>&gt; <span class="fn">DoAsyncWithResult</span>(<span class="tp">bool</span> pushOnly, std::function&lt;<span class="tp">T</span>()&gt; callback)</code></pre>
+
+    <p class="body-text">
+      JobQueue에 추가된 새 메서드. 기존 <code>DoAsync()</code>와 동일하게 비동기 실행하되, 결과를 <code>Future&lt;T&gt;</code>로 반환합니다.
+    </p>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.2</span>
+      내부 동작
+    </div>
+
+    <div class="card">
+      <ol style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">1</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>MakePromise&lt;T&gt;()</code>로 Promise/Future 쌍 생성</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">2</span>
+          <span style="color:var(--text-secondary);font-size:14px;">Promise를 캡처한 람다를 Job으로 래핑</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">3</span>
+          <span style="color:var(--text-secondary);font-size:14px;">람다 내부: <code>try { promise.SetValue(callback()); } catch (...) { promise.SetException(current_exception()); }</code></span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">4</span>
+          <span style="color:var(--text-secondary);font-size:14px;"><code>Push(job, pushOnly)</code> — 기존 JobQueue 경로로 제출</span>
+        </li>
+        <li style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="min-width:22px;height:22px;border-radius:50%;background:rgba(0,230,118,0.12);color:var(--accent-green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">5</span>
+          <span style="color:var(--text-secondary);font-size:14px;">Future 반환</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="sub-section-header">
+      <span class="sub-num">5.3</span>
+      사용 예시
+    </div>
+
+<pre><code><span class="kw">auto</span> future = jobQueue-&gt;<span class="fn">DoAsyncWithResult</span>&lt;<span class="tp">Texture*</span>&gt;(<span class="kw">true</span>, []()
+{
+    <span class="kw">return</span> <span class="fn">LoadTextureFromDisk</span>(<span class="str">"albedo.dds"</span>);
+});
+
+<span class="cmt">// 메인 루프에서 폴링</span>
+<span class="tp">Texture*</span> tex = <span class="kw">nullptr</span>;
+<span class="kw">if</span> (future.<span class="fn">TryGet</span>(tex))
+{
+    material-&gt;<span class="fn">SetTexture</span>(<span class="str">"AlbedoMap"</span>, tex);
+}</code></pre>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 6 — 의존성 관계
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec6">
+    <div class="section-header">
+      <span class="section-num">SECTION 06</span>
+      <h2>의존성 관계</h2>
+    </div>
+
+    <div class="card">
+      <div class="dep-graph">
+
+        <!-- Row: CountdownEvent -->
+        <div class="dep-row">
+          <div class="dep-node green">CountdownEvent</div>
+          <div class="dep-arrow">──→</div>
+          <span class="dep-note">독립 모듈. 단독 사용 가능</span>
+        </div>
+
+        <!-- Row: ParallelFor depends on CountdownEvent + JobQueue -->
+        <div class="dep-row" style="margin-top:4px;">
+          <div class="dep-node blue">ParallelFor</div>
+          <div class="dep-arrow">의존 →</div>
+          <div class="dep-node green">CountdownEvent</div>
+          <span style="color:var(--text-muted);font-size:13px;">+</span>
+          <div class="dep-node teal">JobQueue</div>
+          <span style="color:var(--text-muted);font-size:13px;">+</span>
+          <div class="dep-node teal">Job</div>
+        </div>
+
+        <div style="height:1px;background:var(--border-subtle);margin:16px 0;width:100%;"></div>
+
+        <!-- Row: SharedState -->
+        <div class="dep-row">
+          <div class="dep-node purple">SharedState&lt;T&gt;</div>
+          <div class="dep-arrow">──→</div>
+          <span class="dep-note">Promise/Future가 shared_ptr로 공유</span>
+        </div>
+
+        <!-- Row: Promise + Future -->
+        <div class="dep-row" style="margin-top:4px;">
+          <div class="dep-node green">Promise&lt;T&gt;</div>
+          <span style="color:var(--text-muted);font-size:13px;">+</span>
+          <div class="dep-node orange">Future&lt;T&gt;</div>
+          <div class="dep-arrow">← 생성 ←</div>
+          <div class="dep-node teal">MakePromise&lt;T&gt;()</div>
+        </div>
+
+        <!-- Row: DoAsyncWithResult -->
+        <div class="dep-row" style="margin-top:4px;">
+          <div class="dep-node blue">JobQueue::DoAsyncWithResult&lt;T&gt;()</div>
+          <div class="dep-arrow">활용 →</div>
+          <div class="dep-node teal">MakePromise&lt;T&gt;()</div>
+          <div class="dep-arrow">→</div>
+          <div class="dep-node orange">Future&lt;T&gt;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-md" style="background:rgba(22,33,62,0.6);">
+      <p style="color:var(--text-secondary);font-size:14px;line-height:1.85;">
+        <strong style="color:var(--accent-green);">CountdownEvent</strong>는 독립 모듈입니다. ParallelFor의 전제조건이면서 단독으로도 사용 가능합니다.<br>
+        <strong style="color:var(--accent-orange);">Future/Promise</strong>는 독립 모듈입니다. <code>JobQueue::DoAsyncWithResult</code>가 이를 활용합니다.<br>
+        <strong style="color:var(--accent-blue);">ParallelFor</strong>는 CountdownEvent + JobQueue + Job에 의존합니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 7 — 주의사항
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec7">
+    <div class="section-header">
+      <span class="section-num">SECTION 07</span>
+      <h2>주의사항 및 제약</h2>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">⚠ 주의 1 — CountdownEvent Signal 과다 호출 금지</div>
+      <div class="warning-card-body">
+        count보다 많이 <code>Signal()</code>하면 카운터가 음수로 진입합니다.
+        <strong>정확히 count번만 호출</strong>해야 합니다.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">⚠ 주의 2 — Promise는 1회만 설정 가능</div>
+      <div class="warning-card-body">
+        <code>SetValue()</code> 또는 <code>SetException()</code>을 2번 호출하면 <code>ASSERT_TRIG_CRASH</code>합니다.
+        <strong>한 Promise에 한 번만 결과를 설정</strong>하세요.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">⚠ 주의 3 — Future::Get()은 블로킹</div>
+      <div class="warning-card-body">
+        메인 스레드에서 호출 시 프레임 멈춤이 발생할 수 있습니다.
+        <strong>메인 스레드에서는 <code>TryGet()</code> 또는 <code>Then()</code>을 권장</strong>합니다.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">⚠ 주의 4 — ParallelFor는 동기 함수</div>
+      <div class="warning-card-body">
+        내부에서 <code>Wait()</code>로 모든 청크 완료까지 대기합니다.
+        <strong>호출 스레드는 완료까지 블로킹</strong>됩니다.
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <div class="warning-card-title">⚠ 주의 5 — ParallelFor 람다에서 공유 자원 접근 주의</div>
+      <div class="warning-card-body">
+        body 내부에서 <strong>같은 컨테이너의 다른 인덱스를 접근하는 것은 안전</strong>하지만,
+        <strong>공유 변수 쓰기에는 별도 동기화</strong>가 필요합니다.
+      </div>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <span><span class="footer-dot"></span>Phase 1 Implementation Reference</span>
+  <span><span class="footer-dot"></span>CoreLib Threading Extensions</span>
+  <span><span class="footer-dot"></span>MyYachtDice Engine</span>
+  <span><span class="footer-dot"></span>2026-03-11</span>
+</footer>
+
+</body>
+</html>

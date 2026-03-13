@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreLib 스레딩 시스템 분석 및 개선 계획</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0f0f1a;
+      --bg-main:    #1a1a2e;
+      --bg-card:    #16213e;
+      --bg-code:    #0d1117;
+      --bg-table:   #1e2240;
+
+      --accent-green:  #00e676;
+      --accent-blue:   #40c4ff;
+      --accent-orange: #ffab40;
+      --accent-purple: #ce93d8;
+      --accent-teal:   #64ffda;
+
+      --text-primary:  #e8eaf6;
+      --text-secondary:#9fa8da;
+      --text-muted:    #546e7a;
+      --text-code:     #80cbc4;
+
+      --border-subtle: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.18);
+
+      --phase1: #00e676;
+      --phase2: #40c4ff;
+      --phase3: #ffab40;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+
+      --font-sans: 'Segoe UI', 'Apple SD Gothic Neo', -apple-system, sans-serif;
+      --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+
+      --shadow-card: 0 4px 24px rgba(0,0,0,0.5);
+      --shadow-glow-green:  0 0 20px rgba(0,230,118,0.15);
+      --shadow-glow-blue:   0 0 20px rgba(64,196,255,0.15);
+      --shadow-glow-orange: 0 0 20px rgba(255,171,64,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a6a; }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .site-header {
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 60px 24px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 30% 50%, rgba(0,230,118,0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 70% 50%, rgba(64,196,255,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(0,230,118,0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(0,230,118,0.3);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      margin-bottom: 20px;
+    }
+
+    .site-header h1 {
+      font-size: clamp(22px, 4vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .site-header h1 span.hl {
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .header-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-meta .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      display: inline-block;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── TOC ──────────────────────────────────────────────────── */
+    .toc {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--accent-purple);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin: 40px 0 48px;
+    }
+
+    .toc h2 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-purple);
+      margin-bottom: 14px;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 6px 24px;
+    }
+
+    .toc li {
+      counter-increment: toc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .toc li::before {
+      content: counter(toc, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-purple);
+      opacity: 0.7;
+      min-width: 24px;
+    }
+
+    .toc a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .toc a:hover { color: var(--text-primary); }
+
+    /* ── Sections ─────────────────────────────────────────────── */
+    .section {
+      margin-bottom: 64px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-teal);
+      background: rgba(100,255,218,0.08);
+      border: 1px solid rgba(100,255,218,0.2);
+      border-radius: var(--radius-sm);
+      padding: 3px 10px;
+      letter-spacing: 1px;
+    }
+
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ── Cards ────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* ── Tables ───────────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead tr {
+      background: #1e2240;
+    }
+
+    thead th {
+      padding: 13px 18px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent-teal);
+      border-bottom: 1px solid var(--border-bright);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 12px 18px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    tbody td:first-child {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent-blue);
+      font-weight: 500;
+    }
+
+    .badge-done {
+      color: var(--accent-green);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* ── Code Blocks ──────────────────────────────────────────── */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 3px solid var(--accent-teal);
+      border-radius: var(--radius-sm);
+      padding: 20px 22px;
+      overflow-x: auto;
+      margin: 12px 0;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-code);
+      line-height: 1.75;
+    }
+
+    /* Inline code */
+    p code, li code {
+      background: rgba(100,255,218,0.08);
+      border: 1px solid rgba(100,255,218,0.15);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12.5px;
+      color: var(--accent-teal);
+    }
+
+    /* Syntax highlighting (static) */
+    .kw  { color: #c792ea; }   /* keywords */
+    .tp  { color: #82aaff; }   /* types */
+    .fn  { color: #82aaff; }   /* functions */
+    .str { color: #c3e88d; }   /* strings */
+    .cmt { color: #546e7a; font-style: italic; } /* comments */
+    .num { color: #f78c6c; }   /* numbers */
+    .pp  { color: #89ddff; }   /* preprocessor / arrows */
+
+    /* ── Arch Diagram ─────────────────────────────────────────── */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .arch-grid { grid-template-columns: 1fr; }
+    }
+
+    .arch-box {
+      background: var(--bg-code);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.85;
+    }
+
+    .arch-box-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .arch-step {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .arch-num {
+      min-width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .arch-box.main .arch-box-title { color: var(--accent-green); }
+    .arch-box.main .arch-num       { background: rgba(0,230,118,0.15); color: var(--accent-green); }
+
+    .arch-box.worker .arch-box-title { color: var(--accent-blue); }
+    .arch-box.worker .arch-num       { background: rgba(64,196,255,0.15); color: var(--accent-blue); }
+
+    .arch-text { color: var(--text-secondary); }
+    .arch-arrow { color: var(--accent-teal); }
+
+    /* ── Phase Cards ──────────────────────────────────────────── */
+    .phase-card {
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phase-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .phase-card.p1 {
+      background: linear-gradient(135deg, rgba(0,230,118,0.05), var(--bg-card));
+      border: 1px solid rgba(0,230,118,0.2);
+      box-shadow: var(--shadow-card), var(--shadow-glow-green);
+    }
+    .phase-card.p1::before { background: linear-gradient(90deg, var(--phase1), transparent); }
+
+    .phase-card.p2 {
+      background: linear-gradient(135deg, rgba(64,196,255,0.05), var(--bg-card));
+      border: 1px solid rgba(64,196,255,0.2);
+      box-shadow: var(--shadow-card), var(--shadow-glow-blue);
+    }
+    .phase-card.p2::before { background: linear-gradient(90deg, var(--phase2), transparent); }
+
+    .phase-card.p3 {
+      background: linear-gradient(135deg, rgba(255,171,64,0.05), var(--bg-card));
+      border: 1px solid rgba(255,171,64,0.2);
+      box-shadow: var(--shadow-card), var(--shadow-glow-orange);
+    }
+    .phase-card.p3::before { background: linear-gradient(90deg, var(--phase3), transparent); }
+
+    .phase-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .phase-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .p1 .phase-label { color: var(--phase1); }
+    .p2 .phase-label { color: var(--phase2); }
+    .p3 .phase-label { color: var(--phase3); }
+
+    .phase-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .sub-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .phase-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+
+    .comp-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .comp-list li {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .p1 .comp-list li { color: var(--phase1); border-color: rgba(0,230,118,0.3); background: rgba(0,230,118,0.05); }
+    .p2 .comp-list li { color: var(--phase2); border-color: rgba(64,196,255,0.3); background: rgba(64,196,255,0.05); }
+    .p3 .comp-list li { color: var(--phase3); border-color: rgba(255,171,64,0.3); background: rgba(255,171,64,0.05); }
+
+    /* ── Dividers between sub-sections ───────────────────────── */
+    .sub-divider {
+      border: none;
+      border-top: 1px dashed var(--border-subtle);
+      margin: 30px 0;
+    }
+
+    /* ── Phase sub-header ─────────────────────────────────────── */
+    .phase-sub-header {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin: 36px 0 20px;
+      padding-left: 12px;
+      border-left: 3px solid;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary);
+    }
+
+    .phase-sub-header.p1 { border-color: var(--phase1); }
+    .phase-sub-header.p2 { border-color: var(--phase2); }
+
+    /* ── Roadmap ──────────────────────────────────────────────── */
+    .roadmap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .roadmap-phase {
+      display: flex;
+      gap: 0;
+    }
+
+    .roadmap-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 48px;
+      flex-shrink: 0;
+    }
+
+    .roadmap-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .roadmap-line {
+      width: 2px;
+      flex: 1;
+      min-height: 20px;
+      background: var(--border-subtle);
+    }
+
+    .roadmap-phase:last-child .roadmap-line { display: none; }
+
+    .roadmap-content {
+      flex: 1;
+      padding: 0 0 36px 20px;
+    }
+
+    .roadmap-phase-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .roadmap-phase.rp1 .roadmap-dot { border-color: var(--phase1); background: rgba(0,230,118,0.15); color: var(--phase1); }
+    .roadmap-phase.rp1 .roadmap-phase-title { color: var(--phase1); }
+
+    .roadmap-phase.rp2 .roadmap-dot { border-color: var(--phase2); background: rgba(64,196,255,0.15); color: var(--phase2); }
+    .roadmap-phase.rp2 .roadmap-phase-title { color: var(--phase2); }
+
+    .roadmap-phase.rp3 .roadmap-dot { border-color: var(--phase3); background: rgba(255,171,64,0.15); color: var(--phase3); }
+    .roadmap-phase.rp3 .roadmap-phase-title { color: var(--phase3); }
+
+    .roadmap-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .roadmap-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+    }
+
+    .roadmap-item-icon {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      margin-top: 2px;
+      min-width: 16px;
+    }
+
+    .rp1 .roadmap-item-icon { color: var(--phase1); }
+    .rp2 .roadmap-item-icon { color: var(--phase2); }
+    .rp3 .roadmap-item-icon { color: var(--phase3); }
+
+    .roadmap-item-name {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .roadmap-item-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .site-footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-subtle);
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .site-footer span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      display: inline-block;
+    }
+
+    /* ── Utilities ────────────────────────────────────────────── */
+    .mt-sm { margin-top: 10px; }
+    .mt-md { margin-top: 20px; }
+    .text-muted { color: var(--text-muted); font-size: 14px; }
+    .inline-note {
+      display: inline-block;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 3px 12px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-badge">Technical Analysis</div>
+  <h1><span class="hl">CoreLib</span> 스레딩 시스템<br>분석 및 개선 계획</h1>
+  <div class="header-meta">
+    <span><span class="dot"></span>MyYachtDice Engine</span>
+    <span><span class="dot"></span>C++17 · DirectX 11</span>
+    <span><span class="dot"></span>2026-03-11</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CONTAINER
+════════════════════════════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="목차">
+    <h2>목차</h2>
+    <ol>
+      <li><a href="#sec1">현재 CoreLib 스레딩 시스템 요약</a></li>
+      <li><a href="#sec2">아키텍처 다이어그램</a></li>
+      <li><a href="#sec3">추가 계획</a></li>
+      <li><a href="#sec4">추천 구현 순서 (로드맵)</a></li>
+    </ol>
+  </nav>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 1 — 현재 시스템 요약
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec1">
+    <div class="section-header">
+      <span class="section-num">SECTION 01</span>
+      <h2>현재 CoreLib 스레딩 시스템 요약</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>구성요소</th>
+            <th>상태</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ThreadManager</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>워커 스레드 관리, 글로벌 큐 분배</td>
+          </tr>
+          <tr>
+            <td>Lock (RW Spinlock)</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>재진입 가능, 10초 타임아웃, 데드락 감지</td>
+          </tr>
+          <tr>
+            <td>JobQueue / ConcurrentJobQueue</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>비동기 잡 실행, 시간 슬라이싱</td>
+          </tr>
+          <tr>
+            <td>MainThreadQueue</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>GPU/메인 스레드 전용 지연 작업</td>
+          </tr>
+          <tr>
+            <td>JobTimer</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>지연 예약 잡 (weak_ptr 안전)</td>
+          </tr>
+          <tr>
+            <td>DeadLockProfiler</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>DEBUG 전용 DFS 순환 감지</td>
+          </tr>
+          <tr>
+            <td>LockQueue&lt;T&gt;</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>범용 스레드 안전 큐</td>
+          </tr>
+          <tr>
+            <td>CoreTLS</td>
+            <td><span class="badge-done">✅ 완료</span></td>
+            <td>TLS 4개 변수</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card mt-md">
+      <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.8;">
+        현재 시스템은 <strong style="color:var(--text-primary)">"잡을 큐에 넣고 워커가 처리"하는 fire-and-forget 모델</strong>입니다.
+        게임 엔진으로서 실질적으로 부족한 영역을 우선순위별로 정리했습니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 2 — 아키텍처 다이어그램
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec2">
+    <div class="section-header">
+      <span class="section-num">SECTION 02</span>
+      <h2>아키텍처 다이어그램</h2>
+    </div>
+
+    <div class="arch-grid">
+      <!-- Main Thread -->
+      <div class="arch-box main">
+        <div class="arch-box-title">🖥 Main Thread</div>
+
+        <div class="arch-step">
+          <span class="arch-num">1</span>
+          <span class="arch-text"><span class="fn">InitCore</span><span class="pp">()</span>
+            <span class="cmt">← 스레딩 인프라 초기화</span></span>
+        </div>
+
+        <div class="arch-step">
+          <span class="arch-num">2</span>
+          <span class="arch-text"><span class="tp">ThreadManager</span>::<span class="fn">Launch</span><span class="pp">(</span><span class="str">worker_loop</span><span class="pp">)</span>
+            <span class="cmt">← 워커 스레드 생성</span></span>
+        </div>
+
+        <div class="arch-step">
+          <span class="arch-num">3</span>
+          <span class="arch-text" style="line-height:2;">
+            <span class="cmt">// 메인 루프</span><br>
+            <span class="tp">SceneManager</span>::<span class="fn">Update</span><span class="pp">(</span><span class="str">dt</span><span class="pp">)</span><br>
+            <span class="arch-arrow">  └─</span> <span class="tp">RenderComponent</span>::<span class="fn">Update</span><span class="pp">()</span><br>
+            <span class="arch-arrow">  └─</span> <span class="fn">DoGlobalWork</span><span class="pp">(</span><span class="num">16</span>, <span class="num">10</span><span class="pp">)</span><br>
+            <span class="arch-arrow">  └─</span> <span class="tp">GMainQueue</span>-><span class="fn">ExecuteAll</span><span class="pp">()</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Worker Thread -->
+      <div class="arch-box worker">
+        <div class="arch-box-title">⚙ Worker Thread (×N)</div>
+
+        <div class="arch-step">
+          <span class="arch-num">1</span>
+          <span class="arch-text"><span class="fn">InitTLS</span><span class="pp">()</span>
+            <span class="cmt">← LThreadID, LWorkerEndTick 설정</span></span>
+        </div>
+
+        <div class="arch-step">
+          <span class="arch-num">2</span>
+          <span class="arch-text" style="line-height:2;">
+            <span class="kw">while</span> <span class="pp">(</span>running<span class="pp">)</span> <span class="pp">{</span><br>
+            <span class="arch-arrow">  ├─</span> Pop <span class="tp">JobQueue</span><br>
+            <span class="arch-arrow">  ├─</span> Execute jobs<br>
+            <span class="arch-arrow">  ├─</span> Re-queue <span class="kw">if</span> time exceeded<br>
+            <span class="arch-arrow">  └─</span> Sleep <span class="kw">if</span> no work<br>
+            <span class="pp">}</span>
+          </span>
+        </div>
+
+        <div class="arch-step">
+          <span class="arch-num">3</span>
+          <span class="arch-text"><span class="fn">DestroyTLS</span><span class="pp">()</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 3 — 추가 계획
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec3">
+    <div class="section-header">
+      <span class="section-num">SECTION 03</span>
+      <h2>추가 계획</h2>
+    </div>
+
+    <!-- Phase 1 header -->
+    <div class="phase-sub-header p1">Phase 1 — 즉시 필요 <span style="font-size:11px;font-weight:400;color:var(--text-muted);letter-spacing:0;">(높은 실용성)</span></div>
+
+    <!-- 1-1 Future/Promise -->
+    <div class="phase-card p1">
+      <div class="phase-label">Phase 1</div>
+      <div class="sub-id">1-1</div>
+      <h3>Future&lt;T&gt; / Promise&lt;T&gt; — 비동기 결과 반환</h3>
+      <p>
+        현재 Job은 결과를 돌려받을 방법이 없습니다. 리소스 비동기 로딩에서
+        <em>"로드 완료 시 결과를 받아 처리"</em>하는 패턴이 필요합니다.
+      </p>
+
+<pre><code><span class="cmt">// 사용 예시</span>
+<span class="kw">auto</span> future = jobQueue-><span class="fn">DoAsyncWithResult</span>&lt;<span class="tp">Texture*</span>&gt;([](){
+    <span class="kw">return</span> <span class="fn">LoadTextureFromDisk</span>(<span class="str">"path.dds"</span>);
+});
+
+<span class="cmt">// 나중에</span>
+<span class="kw">if</span> (future.<span class="fn">IsReady</span>()) {
+    <span class="tp">Texture*</span> tex = future.<span class="fn">Get</span>();
+}</code></pre>
+
+      <ul class="comp-list">
+        <li>SharedState&lt;T&gt; — 결과 + ready 플래그 + continuation</li>
+        <li>Promise&lt;T&gt; — 생산자 측 (SetValue / SetException)</li>
+        <li>Future&lt;T&gt; — 소비자 측 (IsReady / Get / Then)</li>
+      </ul>
+    </div>
+
+    <!-- 1-2 ParallelFor -->
+    <div class="phase-card p1">
+      <div class="phase-label">Phase 1</div>
+      <div class="sub-id">1-2</div>
+      <h3>ParallelFor — 병렬 배치 처리</h3>
+      <p>
+        물리, 파티클, AI 등에서 대량 오브젝트를 병렬 처리할 유틸리티가 없습니다.
+      </p>
+
+<pre><code><span class="cmt">// 사용 예시</span>
+<span class="fn">ParallelFor</span>(<span class="num">0</span>, rigidBodies.<span class="fn">size</span>(), [&amp;](<span class="tp">int32</span> i) {
+    rigidBodies[i].<span class="fn">IntegrateForces</span>(dt);
+});</code></pre>
+
+      <ul class="comp-list">
+        <li>인덱스 범위를 워커 수에 따라 청크 분할</li>
+        <li>내부적으로 JobQueue + 카운터 기반 완료 대기</li>
+      </ul>
+    </div>
+
+    <!-- 1-3 CountdownEvent -->
+    <div class="phase-card p1">
+      <div class="phase-label">Phase 1</div>
+      <div class="sub-id">1-3</div>
+      <h3>CountdownEvent (Barrier / Latch)</h3>
+      <p>
+        여러 워커 작업의 완료를 동기적으로 대기하는 메커니즘이 없습니다.
+      </p>
+
+<pre><code><span class="tp">CountdownEvent</span> event(taskCount);
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; task : tasks) {
+    jobQueue-><span class="fn">DoAsync</span>([&amp;]() {
+        task.<span class="fn">Process</span>();
+        event.<span class="fn">Signal</span>();
+    });
+}
+event.<span class="fn">Wait</span>(); <span class="cmt">// 모든 태스크 완료까지 대기</span></code></pre>
+
+      <ul class="comp-list">
+        <li>Atomic&lt;int32&gt; 카운터 + Windows Event 기반 대기</li>
+        <li>순수 스핀 대기 회피 → CPU 효율 개선</li>
+      </ul>
+    </div>
+
+    <!-- Phase 2 header -->
+    <div class="phase-sub-header p2">Phase 2 — 아키텍처 강화</div>
+
+    <!-- 2-1 TaskGraph -->
+    <div class="phase-card p2">
+      <div class="phase-label">Phase 2</div>
+      <div class="sub-id">2-1</div>
+      <h3>TaskGraph — 잡 의존성 그래프</h3>
+      <p>
+        현재 잡 간 순서 보장이 불가합니다. <em>"A, B 완료 후 C 실행"</em> 같은 의존성 표현이 필요합니다.
+      </p>
+
+<pre><code><span class="kw">auto</span> taskA = graph.<span class="fn">AddTask</span>(<span class="str">"PhysicsBroadPhase"</span>,  [](){ <span class="cmt">/* ... */</span> });
+<span class="kw">auto</span> taskB = graph.<span class="fn">AddTask</span>(<span class="str">"PhysicsNarrowPhase"</span>, [](){ <span class="cmt">/* ... */</span> });
+<span class="kw">auto</span> taskC = graph.<span class="fn">AddTask</span>(<span class="str">"PhysicsResolve"</span>,     [](){ <span class="cmt">/* ... */</span> });
+
+taskC-><span class="fn">DependsOn</span>(taskA);
+taskC-><span class="fn">DependsOn</span>(taskB);
+graph.<span class="fn">Execute</span>(); <span class="cmt">// A, B 병렬 → C 순차</span></code></pre>
+
+      <ul class="comp-list">
+        <li>물리 파이프라인 (BroadPhase → NarrowPhase → Resolve) 즉시 활용</li>
+        <li>DAG 기반 토폴로지 정렬 + 병렬 실행</li>
+      </ul>
+    </div>
+
+    <!-- 2-2 SpinWait -->
+    <div class="phase-card p2">
+      <div class="phase-label">Phase 2</div>
+      <div class="sub-id">2-2</div>
+      <h3>SpinWait + EventSignal — 하이브리드 대기</h3>
+      <p>
+        현재 Lock은 순수 스핀락입니다. 경합이 긴 경우 CPU를 낭비합니다.
+      </p>
+
+<pre><code><span class="cmt">// 짧은 경합: 스핀 → 긴 경합: OS 이벤트 대기로 전환</span>
+<span class="kw">class</span> <span class="tp">SpinWait</span> {
+    <span class="kw">void</span> <span class="fn">SpinOnce</span>();
+    <span class="cmt">// YieldProcessor → SwitchToThread → Sleep(1) 점진 전환</span>
+    <span class="tp">bool</span> <span class="fn">NextSpinWillYield</span>();
+};</code></pre>
+
+      <ul class="comp-list">
+        <li>YieldProcessor → SwitchToThread → Sleep(1) 점진 전환</li>
+        <li>경합 강도에 따른 자동 전략 전환</li>
+      </ul>
+    </div>
+
+    <!-- 2-3 ThreadSafeHashMap -->
+    <div class="phase-card p2">
+      <div class="phase-label">Phase 2</div>
+      <div class="sub-id">2-3</div>
+      <h3>ThreadSafeHashMap&lt;K, V&gt; — 스레드 안전 해시맵</h3>
+      <p>
+        리소스 매니저(<code>ResourceCache&lt;T&gt;</code>)가 현재 <code>Lock</code> + <code>unordered_map</code>을 수동으로 감싸고 있습니다.
+        범용 concurrent 컨테이너가 있으면 코드 중복을 줄일 수 있습니다.
+      </p>
+
+      <ul class="comp-list">
+        <li>분리 잠금 (Striped Locking) 또는 CAS 기반 구현</li>
+        <li>ResourceCache&lt;T&gt; 코드 단순화</li>
+        <li>GeometryManager / ShaderManager / TextureManager 즉시 활용</li>
+      </ul>
+    </div>
+
+    <!-- Phase 3 table -->
+    <div style="margin-top:36px;">
+      <div style="font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--phase3);margin-bottom:16px;padding-left:12px;border-left:3px solid var(--phase3);">
+        Phase 3 — 고급 최적화 (추후)
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>기능</th>
+              <th>설명</th>
+              <th>용도</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Work Stealing</td>
+              <td style="color:var(--text-secondary);">유휴 워커가 다른 워커의 큐에서 잡을 가져감</td>
+              <td style="color:var(--text-muted);">부하 균형 최적화</td>
+            </tr>
+            <tr>
+              <td>Thread Naming</td>
+              <td style="color:var(--text-secondary);"><code>SetThreadDescription()</code> Win10+ API</td>
+              <td style="color:var(--text-muted);">디버거에서 스레드 식별</td>
+            </tr>
+            <tr>
+              <td>Job Priority</td>
+              <td style="color:var(--text-secondary);">우선순위 큐 기반 잡 스케줄링</td>
+              <td style="color:var(--text-muted);">렌더 &gt; AI &gt; 파티클 등</td>
+            </tr>
+            <tr>
+              <td>Fiber / Coroutine</td>
+              <td style="color:var(--text-secondary);">협력적 멀티태스킹</td>
+              <td style="color:var(--text-muted);">상태 머신, 비동기 로직</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────────────────
+       SECTION 4 — 로드맵
+  ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="sec4">
+    <div class="section-header">
+      <span class="section-num">SECTION 04</span>
+      <h2>추천 구현 순서 (로드맵)</h2>
+    </div>
+
+    <div class="card">
+      <div class="roadmap">
+
+        <!-- Phase 1 -->
+        <div class="roadmap-phase rp1">
+          <div class="roadmap-left">
+            <div class="roadmap-dot">1</div>
+            <div class="roadmap-line"></div>
+          </div>
+          <div class="roadmap-content">
+            <div class="roadmap-phase-title">
+              Phase 1
+              <span style="font-size:12px;font-weight:400;color:var(--text-muted);">즉시 구현</span>
+            </div>
+            <div class="roadmap-items">
+              <div class="roadmap-item">
+                <span class="roadmap-item-icon">├─</span>
+                <div>
+                  <div class="roadmap-item-name">CountdownEvent</div>
+                  <div class="roadmap-item-note">가장 단순 — ParallelFor의 전제조건</div>
+                </div>
+              </div>
+              <div class="roadmap-item">
+                <span class="roadmap-item-icon">├─</span>
+                <div>
+                  <div class="roadmap-item-name">Future / Promise</div>
+                  <div class="roadmap-item-note">비동기 리소스 로딩 개선</div>
+                </div>
+              </div>
+              <div class="roadmap-item">
+                <span class="roadmap-item-icon">└─</span>
+                <div>
+                  <div class="roadmap-item-name">ParallelFor</div>
+                  <div class="roadmap-item-note">PhysicsLib (BroadPhase / NarrowPhase)에 즉시 활용</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="roadmap-phase rp2">
+          <div class="roadmap-left">
+            <div class="roadmap-dot">2</div>
+            <div class="roadmap-line"></div>
+          </div>
+          <div class="roadmap-content">
+            <div class="roadmap-phase-title">
+              Phase 2
+              <span style="font-size:12px;font-weight:400;color:var(--text-muted);">아키텍처 강화</span>
+            </div>
+            <div class="roadmap-items">
+              <div class="roadmap-item">
+                <span class="roadmap-item-icon">├─</span>
+                <div>
+                  <div class="roadmap-item-name">TaskGraph</div>
+                  <div class="roadmap-item-note">물리 / 렌더 파이프라인 의존성 관리</div>
+                </div>
+              </div>
+              <div class="roadmap-item">
+                <span class="roadmap-item-icon">├─</span>
+                <div>
+                  <div class="roadmap-item-name">SpinWait</div>
+                  <div class="roadmap-item-note">Lock 성능 개선 — 하이브리드 대기 전략</div>
+                </div>
+              </div>
+              <div class="roadmap-item">
+                <span class="roadmap-item-icon">└─</span>
+                <div>
+                  <div class="roadmap-item-name">ThreadSafeHashMap</div>
+                  <div class="roadmap-item-note">리소스 매니저 코드 정리 및 중복 제거</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="roadmap-phase rp3">
+          <div class="roadmap-left">
+            <div class="roadmap-dot">3</div>
+            <div class="roadmap-line"></div>
+          </div>
+          <div class="roadmap-content">
+            <div class="roadmap-phase-title">
+              Phase 3
+              <span style="font-size:12px;font-weight:400;color:var(--text-muted);">고급 최적화</span>
+            </div>
+            <div class="roadmap-items">
+              <div class="roadmap-item">
+                <span class="roadmap-item-icon">└─</span>
+                <div>
+                  <div class="roadmap-item-name">Work Stealing · Thread Naming · Job Priority</div>
+                  <div class="roadmap-item-note">스케줄러 고도화 및 디버거 편의성 개선</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /roadmap -->
+    </div><!-- /card -->
+
+  </section>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <span><span class="footer-dot"></span>Date: 2026-03-11</span>
+  <span><span class="footer-dot"></span>Project: MyYachtDice Engine</span>
+  <span><span class="footer-dot"></span>CoreLib Threading System Analysis</span>
+</footer>
+
+</body>
+</html>

@@ -4,6 +4,12 @@
 
 namespace GameEngine
 {
+	void Scene::Start()
+	{
+		for (auto& go : m_gameObjects)
+			go->Start();
+	}
+
 	void Scene::Update(float dt)
 	{
 		for (auto& go : m_gameObjects)

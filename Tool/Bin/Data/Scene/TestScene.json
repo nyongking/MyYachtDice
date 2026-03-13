@@ -4,8 +4,8 @@
             "name": "MainCamera",
             "active": true,
             "transform": {
-                "position": [ 0.0, 5.0, -10.0 ],
-                "rotation": [ 15.0, 0.0, 0.0 ],
+                "position": [ 0.0, 8.0, -15.0 ],
+                "rotation": [ 20.0, 0.0, 0.0 ],
                 "scale":    [ 1.0, 1.0, 1.0 ]
             },
             "components": [
@@ -33,7 +33,7 @@
                     "type":      "LightComponent",
                     "lightType": "Directional",
                     "color":     [ 1.0, 1.0, 1.0 ],
-                    "direction": [ 0.5, -1.0, 0.5 ],
+                    "direction": [ 0.3, -1.0, 0.5 ],
                     "position":  [ 0.0,  0.0, 0.0 ],
                     "intensity": 1.0,
                     "range":     0.0,
@@ -43,25 +43,216 @@
             ]
         },
         {
-            "name": "Dice",
+            "name": "Ground",
             "active": true,
             "transform": {
                 "position": [ 0.0, 0.0, 0.0 ],
+                "rotation": [ 0.0, 0.0, 0.0 ],
+                "scale":    [ 1.0, 1.0, 1.0 ]
+            },
+            "components": [
+              {
+                "type": "RigidBodyComponent",
+                "bodyType": "Static",
+                "mass": 10.0,
+                "restitution": 0.3,
+                "friction": 0.5,
+                "linearDamping": 0.0,
+                "angularDamping": 0.0,
+                "collider": {
+                  "shape": "Box",
+                  "halfExtents": [ 10.0, 1.0, 10.0 ],
+                  "isTrigger": false,
+                  "layer": 1,
+                  "layerMask": 4294967295
+                }
+              }
+            ]
+        },
+        {
+            "name": "FallingCube",
+            "active": true,
+            "transform": {
+                "position": [ 0.0, 5.0, 0.0 ],
                 "rotation": [ 0.0, 0.0, 0.0 ],
                 "scale":    [ 50.0, 50.0, 50.0 ]
             },
             "components": [
                 {
                     "type":      "ModelComponent",
-                    "modelKey":  "Dice",
+                    "modelKey":  "Cube",
                     "modelPath": "Bin/Resource/Model/Cube.mymesh",
                     "layer":     "Opaque",
                     "sections": [
                         { "albedoColor": [ 1.0, 1.0, 1.0, 1.0 ] },
                         { "albedoColor": [ 0.667, 0.078, 0.0, 1.0 ] }
                     ]
+                },
+              {
+                "type": "RigidBodyComponent",
+                "bodyType": "Dynamic",
+                "mass": 5.0,
+                "restitution": 0.1,
+                "friction": 0.8,
+                "linearDamping": 0.01,
+                "angularDamping": 0.05,
+                "collider": {
+                  "shape": "Box",
+                  "halfExtents": [ 0.48, 0.48, 0.48 ],
+                  "isTrigger": false,
+                  "layer": 1,
+                  "layerMask": 4294967295
                 }
+              }
             ]
-        }
+        },
+      {
+        "name": "FallingCube2",
+        "active": true,
+        "transform": {
+          "position": [ 2.0, 8.0, 0.0 ],
+          "rotation": [ 10.0, 50.0, 60.0 ],
+          "scale": [ 50.0, 50.0, 50.0 ]
+        },
+        "components": [
+          {
+            "type": "ModelComponent",
+            "modelKey": "Cube2",
+            "modelPath": "Bin/Resource/Model/Cube.mymesh",
+            "layer": "Opaque",
+            "sections": [
+              { "albedoColor": [ 1.0, 1.0, 1.0, 1.0 ] },
+              { "albedoColor": [ 0.667, 0.078, 0.0, 1.0 ] }
+            ]
+          },
+          {
+            "type": "RigidBodyComponent",
+            "bodyType": "Dynamic",
+            "mass": 5.0,
+            "restitution": 0.1,
+            "friction": 0.8,
+            "linearDamping": 0.01,
+            "angularDamping": 0.05,
+            "collider": {
+              "shape": "Box",
+              "halfExtents": [ 0.48, 0.48, 0.48 ],
+              "isTrigger": false,
+              "layer": 1,
+              "layerMask": 4294967295
+            }
+          }
+        ]
+      },
+      {
+        "name": "FallingCube3",
+        "active": true,
+        "transform": {
+          "position": [ 0.0, 3.0, 1.0 ],
+          "rotation": [ 10.0, 10.0, 270.0 ],
+          "scale": [ 50.0, 50.0, 50.0 ]
+        },
+        "components": [
+          {
+            "type": "ModelComponent",
+            "modelKey": "Cube2",
+            "modelPath": "Bin/Resource/Model/Cube.mymesh",
+            "layer": "Opaque",
+            "sections": [
+              { "albedoColor": [ 1.0, 1.0, 1.0, 1.0 ] },
+              { "albedoColor": [ 0.667, 0.078, 0.0, 1.0 ] }
+            ]
+          },
+          {
+            "type": "RigidBodyComponent",
+            "bodyType": "Dynamic",
+            "mass": 5.0,
+            "restitution": 0.1,
+            "friction": 0.8,
+            "linearDamping": 0.01,
+            "angularDamping": 0.05,
+            "collider": {
+              "shape": "Box",
+              "halfExtents": [ 0.48, 0.48, 0.48 ],
+              "isTrigger": false,
+              "layer": 1,
+              "layerMask": 4294967295
+            }
+          }
+        ]
+      },
+      {
+        "name": "FallingCube4",
+        "active": true,
+        "transform": {
+          "position": [ -1.0, 5.0, 0.0 ],
+          "rotation": [ 210.0, 210.0, 270.0 ],
+          "scale": [ 50.0, 50.0, 50.0 ]
+        },
+        "components": [
+          {
+            "type": "ModelComponent",
+            "modelKey": "Cube2",
+            "modelPath": "Bin/Resource/Model/Cube.mymesh",
+            "layer": "Opaque",
+            "sections": [
+              { "albedoColor": [ 1.0, 1.0, 1.0, 1.0 ] },
+              { "albedoColor": [ 0.667, 0.078, 0.0, 1.0 ] }
+            ]
+          },
+          {
+            "type": "RigidBodyComponent",
+            "bodyType": "Dynamic",
+            "mass": 5.0,
+            "restitution": 0.1,
+            "friction": 0.8,
+            "linearDamping": 0.01,
+            "angularDamping": 0.05,
+            "collider": {
+              "shape": "Box",
+              "halfExtents": [ 0.48, 0.48, 0.48 ],
+              "isTrigger": false,
+              "layer": 1,
+              "layerMask": 4294967295
+            }
+          }
+        ]
+      },
+      {
+        "name": "FallingCube5",
+        "active": true,
+        "transform": {
+          "position": [ 0.0, 10.0, 0.0 ],
+          "rotation": [ 0.0, 20.0, 65.0 ],
+          "scale": [ 50.0, 50.0, 50.0 ]
+        },
+        "components": [
+          {
+            "type": "ModelComponent",
+            "modelKey": "Cube2",
+            "modelPath": "Bin/Resource/Model/Cube.mymesh",
+            "layer": "Opaque",
+            "sections": [
+              { "albedoColor": [ 1.0, 1.0, 1.0, 1.0 ] },
+              { "albedoColor": [ 0.667, 0.078, 0.0, 1.0 ] }
+            ]
+          },
+          {
+            "type": "RigidBodyComponent",
+            "bodyType": "Dynamic",
+            "mass": 5.0,
+            "restitution": 0.1,
+            "friction": 0.8,
+            "linearDamping": 0.01,
+            "angularDamping": 0.05,
+            "collider": {
+              "shape": "Box",
+              "halfExtents": [ 0.48, 0.48, 0.48 ],
+              "isTrigger": false,
+              "layer": 1,
+              "layerMask": 4294967295
+            }
+          }
+        ]
+      }
     ]
 }

@@ -29,9 +29,10 @@ namespace GameEngine
 
 		GameObject* GetOwner() const { return m_owner; }
 
-#ifdef TOOL
+		// Inspector GUI — TOOL 빌드에서만 실제 구현, 그 외에는 no-op.
+		// vtable 레이아웃 일관성을 위해 항상 선언한다.
 		virtual void OnInspectorGUI() {}
-#endif
+
 
 	private:
 		friend class GameObject;

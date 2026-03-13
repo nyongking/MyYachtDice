@@ -117,7 +117,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;GameEngineLib.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;GameEngineLib.lib;PhysicsLib.lib;assimp-vc143-mtd.lib;DirectXTKd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd /d $(ProjectDir)
@@ -141,7 +141,7 @@ call UpdateLib.bat</Command>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;GameEngineLib.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CoreLib.lib;RenderLib.lib;ServerCoreLib.lib;GameEngineLib.lib;PhysicsLib.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd /d $(ProjectDir)

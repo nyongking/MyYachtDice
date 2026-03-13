@@ -58,6 +58,12 @@
     <Filter Include="01.Component\LightComponent">
       <UniqueIdentifier>{d659c63d-b686-4f80-a01f-0898c63ecd11}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Manager\Physics">
+      <UniqueIdentifier>{a8b9c0d1-e2f3-4567-89ab-cdef01234567}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Component\RigidBodyComponent">
+      <UniqueIdentifier>{b9c0d1e2-f3a4-5678-9abc-def012345678}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEnginePch.h">
@@ -131,6 +137,21 @@
     <ClInclude Include="EditorScene.h">
       <Filter>02.Scene</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsManager.h">
+      <Filter>03.Manager\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsConvert.h">
+      <Filter>03.Manager\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBodyComponent.h">
+      <Filter>01.Component\RigidBodyComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="WireframeMaterial.h">
+      <Filter>03.Manager\Resource\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugGeometry.h">
+      <Filter>03.Manager\Resource\Geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameEnginePch.cpp">
@@ -197,6 +218,15 @@
     <ClCompile Include="GBufferMaterial.cpp" />
     <ClCompile Include="LightComponent.cpp">
       <Filter>01.Component\LightComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsManager.cpp">
+      <Filter>03.Manager\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBodyComponent.cpp">
+      <Filter>01.Component\RigidBodyComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugGeometry.cpp">
+      <Filter>03.Manager\Resource\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

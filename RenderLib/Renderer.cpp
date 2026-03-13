@@ -216,4 +216,10 @@ namespace Render
 		ctx->OMSetRenderTargets(1, rtvs, m_depthstencilView.Get());
 	}
 
+	void Renderer::ClearDepth(ID3D11DeviceContext* ctx)
+	{
+		ctx->ClearDepthStencilView(m_depthstencilView.Get(),
+			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+	}
+
 }

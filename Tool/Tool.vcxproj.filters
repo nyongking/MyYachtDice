@@ -55,6 +55,7 @@
     <ClCompile Include="DiceMaterial.cpp">
       <Filter>11.Material</Filter>
     </ClCompile>
+    <ClCompile Include="EditorScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainApp.h">
@@ -93,6 +94,7 @@
     <ClInclude Include="DiceMaterial.h">
       <Filter>11.Material</Filter>
     </ClInclude>
+    <ClInclude Include="EditorScene.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">

@@ -139,21 +139,36 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BroadPhase.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="Collision.h" />
+    <ClInclude Include="Contact.h" />
+    <ClInclude Include="ContactSolver.h" />
+    <ClInclude Include="IJobDispatcher.h" />
+    <ClInclude Include="IslandBuilder.h" />
+    <ClInclude Include="Mat3.h" />
     <ClInclude Include="MyNumbers.h" />
+    <ClInclude Include="NarrowPhase.h" />
     <ClInclude Include="Operation.h" />
     <ClInclude Include="PhysicsPch.h" />
+    <ClInclude Include="PhysicsWorld.h" />
     <ClInclude Include="Quat.h" />
+    <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Vec3.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MyNumbers.cpp" />
-    <ClCompile Include="Operation.cpp" />
+    <ClCompile Include="BroadPhase.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="ContactSolver.cpp" />
+    <ClCompile Include="IslandBuilder.cpp" />
+    <ClCompile Include="NarrowPhase.cpp" />
     <ClCompile Include="PhysicsPch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Quat.cpp" />
-    <ClCompile Include="Vec3.cpp" />
+    <ClCompile Include="PhysicsWorld.cpp" />
+    <ClCompile Include="RigidBody.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
